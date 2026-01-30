@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { RiskGauge } from "@/components/dashboard/risk-gauge";
@@ -16,16 +17,43 @@ import { Filter, ArrowUpDown } from "lucide-react";
 
 export default function ResultsPage() {
     const router = useRouter();
-    const { results, isExpired } = useAnalysis();
+    const searchParams = useSearchParams();
+    const id = searchParams.get("id");
+    const { results, setResults, isExpired } = useAnalysis();
     const [sortBy, setSortBy] = useState("risk");
     const [filterBy, setFilterBy] = useState("all");
 
-    // Redirect if no results or expired
+    // Handle initial load, history loading, and redirection
     useEffect(() => {
-        if (!results || isExpired()) {
+        // If we have an ID, try to load it specifically
+        if (id) {
+            // If current results match the ID, we're good
+            if (results && results.timestamp.toString() === id) {
+                return;
+            }
+
+            // Otherwise try to find in history
+            const history = localStorage.getItem("verity_report_history");
+            if (history) {
+                try {
+                    const parsed = JSON.parse(history);
+                    const found = parsed.find((r: any) => r.timestamp.toString() === id);
+                    if (found) {
+                        setResults(found);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Failed to load history", e);
+                }
+            }
+        }
+
+        // Standard check: redirect if no results or expired (and we're not viewing a valid history item)
+        // If we have an ID but failed to find it (results is null), we should probably redirect too
+        if (!results || (isExpired() && !id)) {
             router.push("/analyze");
         }
-    }, [results, isExpired, router]);
+    }, [id, results, isExpired, router, setResults]);
 
     // Show loading if no results yet
     if (!results) {
@@ -43,6 +71,15 @@ export default function ResultsPage() {
         day: "numeric"
     });
 
+    // Helper for deterministic progress
+    const getStableProgress = (id: string) => {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+            hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return (Math.abs(hash) % 75) + 25; // Range 25-99
+    };
+
     // Map violations to feed items
     const violationItems = results.violations.map((v, i) => ({
         id: v.id,
@@ -51,7 +88,7 @@ export default function ResultsPage() {
         riskLevel: (v.severity >= 70 ? "high" : v.severity >= 40 ? "medium" : "low") as "high" | "medium" | "low",
         executiveSummary: v.eli5 || "This clause may pose legal risks under Indian Contract Law.",
         section: v.section,
-        progress: Math.floor(Math.random() * 75) + 25, // Mock progress
+        progress: getStableProgress(v.id),
         icon: (v.category === "legal" ? "security" : "handshake") as "security" | "handshake"
     }));
 

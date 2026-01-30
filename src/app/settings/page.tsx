@@ -29,6 +29,7 @@ export default function SettingsPage() {
     useEffect(() => {
         const savedKey = localStorage.getItem("verity_anthropic_api_key");
         if (savedKey) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setApiKey(savedKey);
         }
     }, []);
@@ -70,10 +71,7 @@ export default function SettingsPage() {
         setApiKeyStatus("idle");
     };
 
-    const maskApiKey = (key: string) => {
-        if (key.length <= 8) return key;
-        return key.slice(0, 7) + "•".repeat(Math.min(20, key.length - 11)) + key.slice(-4);
-    };
+
 
     return (
         <div className="min-h-screen bg-[#f8f6f6]">

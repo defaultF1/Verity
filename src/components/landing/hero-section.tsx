@@ -8,9 +8,11 @@ export function HeroSection() {
         <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
             {/* Background */}
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     alt="Courtroom Silhouette"
-                    className="w-full h-full object-cover opacity-50 grayscale"
+                    className="object-cover opacity-50 grayscale"
+                    fill
+                    priority
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMY6mQw4AkycLdQraQo0GRwAraxFcHW_u-qOcIOPMPq2WI8_rrqBkx-17znl2k864MyD_sm1pXaKDOi05ycn8Y9cSr3-rguGrt3h_aGjC7rJF91rC_YCpuKGd_S00gf-UWOdyQgBXAvNUT8RGEOZeIecCVkM47CyOBDFTRJraceRXUbyS_NHVRbvByebSfthuroN39HOb59czemDt4eficpEAD0lm1O_DiY4sGzcKPq74EE-LHgm99DPWUh_pOoZqPdEkUVOJVdRbN"
                 />
                 <div className="absolute inset-0 hero-gradient"></div>
@@ -31,33 +33,18 @@ export function HeroSection() {
                         </h2>
 
                         <div className="flex flex-col items-center gap-8">
-                            <button
-                                onClick={() => {
-                                    // Use window location for simplicity or check auth if interactive
-                                    // But since this is a client component, we can use useAuth
-                                    // However, we need to wrap this in an auth check
-                                    const token = localStorage.getItem("verity_auth");
-                                    if (token && JSON.parse(token).isLoggedIn) {
-                                        window.location.href = "/analyze";
-                                    } else {
-                                        // Dispatch a custom event or usage of auth hook if we have it
-                                        // Since we can't easily prop drill here without refactoring page, and we want to "open sign in page"
-                                        // We will direct to #login or emit event
-                                        // Better: use the auth context directly
-                                        document.dispatchEvent(new CustomEvent('open-login-modal'));
-                                    }
-                                }}
-                                className="group relative bg-[var(--color-accent)] text-white px-12 py-6 text-xl font-black uppercase tracking-tighter hover:scale-105 transition-all duration-500 overflow-hidden"
-                            >
-                                <span className="relative z-10 flex items-center gap-4">
-                                    Upload Your Contract
-                                    <span className="material-symbols-outlined font-bold">arrow_forward</span>
-                                </span>
-                                <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                <span className="absolute inset-0 flex items-center justify-center text-black font-black translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20">
-                                    Get Truth in 10 Seconds
-                                </span>
-                            </button>
+                            <Link href="/analyze">
+                                <button className="group relative bg-[var(--color-accent)] text-white px-12 py-6 text-xl font-black uppercase tracking-tighter hover:scale-105 transition-all duration-500 overflow-hidden">
+                                    <span className="relative z-10 flex items-center gap-4">
+                                        Upload Your Contract
+                                        <span className="material-symbols-outlined font-bold">arrow_forward</span>
+                                    </span>
+                                    <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                    <span className="absolute inset-0 flex items-center justify-center text-black font-black translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20">
+                                        Get Truth in 10 Seconds
+                                    </span>
+                                </button>
+                            </Link>
 
                             <div className="flex items-center gap-3 text-white/40 text-[10px] uppercase tracking-[0.4em] font-bold">
                                 <span className="material-symbols-outlined text-sm">verified_user</span>

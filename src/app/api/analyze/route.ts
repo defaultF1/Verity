@@ -80,7 +80,19 @@ ANALYSIS APPROACH:
 3. Check each against Indian law requirements
 4. For violations, always cite the specific Section and Act
 5. Provide actionable, specific recommendations
-6. Be protective of the freelancer/smaller party`;
+6. Be protective of the freelancer/smaller party
+
+PRIVACY & ANONYMIZATION PROTOCOL (STRICT MANDATE):
+1. You MUST redact any PII found in the "clauseText" or "summary".
+2. Replace specific names of people/companies with "Party A" / "Party B" where possible in the summary, but keep them in "clauseText" if essential for context (or redact if sensitive).
+3. DETECT & REDACT:
+   - Indian Mobile Numbers (+91...) -> <REDACTED_PHONE>
+   - PAN Card Numbers (5 letters, 4 digits, 1 letter) -> <REDACTED_PAN>
+   - Aadhaar Numbers (12 digits) -> <REDACTED_AADHAAR>
+   - Email Addresses -> <REDACTED_EMAIL>
+   - Physical Addresses -> <REDACTED_ADDRESS>
+
+Your output generally should warn the user about the legal risks, not store their personal data.`;
 
 export async function POST(request: NextRequest) {
     try {

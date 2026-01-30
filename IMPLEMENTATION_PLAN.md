@@ -12,7 +12,9 @@ All core features (Phases 1-7) have been implemented:
 | 5 | Legal Depth (Case Law, Citations) | ✅ Complete |
 | 6 | Email Generator | ✅ Complete |
 | 7 | Contract Fixer | ✅ Complete |
-| 8 | Reports & Settings | 🔄 Pending |
+| 8 | Reports & Settings | ✅ Complete |
+| 9 | Privacy & PII Redaction | ✅ Complete |
+| 10 | Litigation Simulation | ✅ Complete |
 
 ---
 
@@ -115,3 +117,87 @@ npm run build
    - Enter a test API key and click Save
    - Refresh page and verify key persists
    - Click "Clear All History" and verify localStorage is cleared
+
+---
+
+## 🔒 Phase 9: Privacy & PII Redaction
+
+### 9.1 Client-Side PII Redactor
+**File:** `lib/pii-redactor.ts` (New)
+
+**Objective:** Redact sensitive information BEFORE sending to API.
+
+**Regex Patterns:**
+| Pattern Type | Regex | Replacement |
+|--------------|-------|-------------|
+| PAN Card | `[A-Z]{5}[0-9]{4}[A-Z]{1}` | `<REDACTED_PAN>` |
+| Aadhaar | `\d{4}\s\d{4}\s\d{4}` | `<REDACTED_AADHAAR>` |
+| Phone | `\+91\d{10}` | `<REDACTED_PHONE>` |
+| Email | `[\w.-]+@[\w.-]+\.\w+` | `<REDACTED_EMAIL>` |
+
+**Integration:**
+- Call `redactPII(contractText)` in `app/analyze/page.tsx` before API call.
+
+### 9.2 Server-Side AI Prompt Update
+**File:** `app/api/analyze/route.ts`
+
+**Status:** ✅ Already implemented (PRIVACY & ANONYMIZATION PROTOCOL added to system prompt).
+
+---
+
+## ⚖️ Phase 10: Litigation Simulation (Predict Outcome)
+
+### 10.1 Backend API
+**File:** `app/api/predict-outcome/route.ts` (New)
+
+**Objective:** AI-powered court case prediction.
+
+**Interface:**
+```typescript
+interface SimulationResult {
+  outcome: "VOID" | "VALID" | "RISKY";
+  confidenceScore: number;
+  courtPath: string[];
+  timeline: string;
+  legalCosts: { min: number; max: number; currency: "INR" };
+  settlementEstimation: string;
+  keyPrecedent: { caseName: string; year: number; rulingSummary: string };
+  riskProfile: { repeatOffender: boolean; judgeView: string };
+}
+```
+
+### 10.2 Frontend Components
+| Component | Path | Description |
+|-----------|------|-------------|
+| SimulationCard | `components/simulation/simulation-card.tsx` | Main card with outcome badge & confidence meter |
+| CourtPath | `components/simulation/court-path.tsx` | Visual timeline: Lower Court → High Court → SC |
+| SimulationModal | `components/simulation/simulation-modal.tsx` | Modal wrapper for triggering simulation |
+
+### 10.3 Integration
+- Add "Simulate Court Case" button to `components/violation-card.tsx`.
+- On click, call `/api/predict-outcome` and display `SimulationModal`.
+
+---
+
+## ✅ Verification Plan (Updated)
+
+### Automated
+```bash
+npm run build
+```
+
+### Manual Verification
+
+**Phase 9 (Privacy):**
+1. Upload a contract containing a PAN number (e.g., `ABCDE1234F`).
+2. Verify the Results page shows `<REDACTED_PAN>` instead of the actual number.
+
+**Phase 10 (Simulation):**
+1. Go to Results page with a Section 27 violation.
+2. Click "Simulate Court Case" button.
+3. Verify:
+   - Outcome shows "VOID" with >90% confidence.
+   - Timeline shows "18-24 months".
+   - Cost range shows "₹3-8 Lakhs".
+   - Precedent cites "Percept D'Mark v. Zaheer Khan".
+

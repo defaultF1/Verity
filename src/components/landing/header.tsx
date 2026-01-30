@@ -26,25 +26,14 @@ export function Header() {
                     <a className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors" href="#pricing">
                         Pricing
                     </a>
-                    <button
-                        onClick={() => document.dispatchEvent(new CustomEvent('open-login-modal'))}
-                        className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors"
-                    >
+                    <a className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors" href="#login">
                         Login
-                    </button>
-                    <button
-                        onClick={() => {
-                            const token = localStorage.getItem("verity_auth");
-                            if (token && JSON.parse(token).isLoggedIn) {
-                                window.location.href = "/analyze";
-                            } else {
-                                document.dispatchEvent(new CustomEvent('open-login-modal'));
-                            }
-                        }}
-                        className="bg-[var(--color-accent)] text-white px-8 py-3 text-xs font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all duration-300"
-                    >
-                        Upload Contract
-                    </button>
+                    </a>
+                    <Link href="/analyze">
+                        <button className="bg-[var(--color-accent)] text-white px-8 py-3 text-xs font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all duration-300">
+                            Upload Contract
+                        </button>
+                    </Link>
                 </nav>
             </div>
         </header>

@@ -2,6 +2,12 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 
+interface UserProfile {
+    name: string;
+    dateOfBirth: string;
+    gender: "male" | "female" | "other" | "prefer_not_to_say";
+}
+
 interface User {
     name: string;
     email: string;
@@ -11,30 +17,42 @@ interface User {
 interface AuthContextType {
     isLoggedIn: boolean;
     user: User | null;
+    profile: UserProfile | null;
+    isProfileComplete: boolean;
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     openLoginModal: () => void;
     closeLoginModal: () => void;
     isLoginModalOpen: boolean;
+    openProfileModal: () => void;
+    closeProfileModal: () => void;
+    isProfileModalOpen: boolean;
+    saveProfile: (profile: UserProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = "verity_auth";
+const PROFILE_STORAGE_KEY = "verity_user_profile";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    // Load auth state from localStorage on mount
+    // Load auth and profile state from localStorage on mount
     useEffect(() => {
         const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        const storedProfile = localStorage.getItem(PROFILE_STORAGE_KEY);
+
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
                 if (parsed.user && parsed.isLoggedIn) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setUser(parsed.user);
                     setIsLoggedIn(true);
                 }
@@ -42,6 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem(AUTH_STORAGE_KEY);
             }
         }
+
+        if (storedProfile) {
+            try {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setProfile(JSON.parse(storedProfile));
+            } catch {
+                localStorage.removeItem(PROFILE_STORAGE_KEY);
+            }
+        }
+
         setIsInitialized(true);
     }, []);
 
@@ -56,9 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [isLoggedIn, user, isInitialized]);
 
-    const login = useCallback(async (email: string, _password: string): Promise<boolean> => {
-        // Simulated auth for hackathon demo
-        // In production, this would call an API
+    // Open profile modal for first-time users after login
+    useEffect(() => {
+        if (isInitialized && isLoggedIn && !profile) {
+            setIsProfileModalOpen(true);
+        }
+    }, [isInitialized, isLoggedIn, profile]);
+
+    const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+        void password;
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const userName = email.split("@")[0];
@@ -67,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
             name: formattedName,
             email,
-            role: "Executive"
+            role: "Freelancer"
         });
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
@@ -77,20 +111,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = useCallback(() => {
         setUser(null);
         setIsLoggedIn(false);
+        setProfile(null);
+        localStorage.removeItem(PROFILE_STORAGE_KEY);
+    }, []);
+
+    const saveProfile = useCallback((newProfile: UserProfile) => {
+        setProfile(newProfile);
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(newProfile));
+        setIsProfileModalOpen(false);
     }, []);
 
     const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
     const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+    const openProfileModal = useCallback(() => setIsProfileModalOpen(true), []);
+    const closeProfileModal = useCallback(() => setIsProfileModalOpen(false), []);
+
+    const isProfileComplete = profile !== null;
 
     const value = useMemo(() => ({
         isLoggedIn,
         user,
+        profile,
+        isProfileComplete,
         login,
         logout,
         openLoginModal,
         closeLoginModal,
-        isLoginModalOpen
-    }), [isLoggedIn, user, login, logout, openLoginModal, closeLoginModal, isLoginModalOpen]);
+        isLoginModalOpen,
+        openProfileModal,
+        closeProfileModal,
+        isProfileModalOpen,
+        saveProfile
+    }), [isLoggedIn, user, profile, isProfileComplete, login, logout, openLoginModal, closeLoginModal, isLoginModalOpen, openProfileModal, closeProfileModal, isProfileModalOpen, saveProfile]);
 
     return (
         <AuthContext.Provider value={value}>

@@ -13,6 +13,7 @@ import { ViolationCard } from "@/components/violation-card";
 import { DeviationCard, type DeviationCardProps } from "@/components/deviation-card";
 import { EmailModal } from "@/components/email-modal";
 import { ContractFixModal } from "@/components/contract-fix-modal";
+import { ProfileSetupModal } from "@/components/profile-setup-modal";
 import { parseDocument } from "@/features/parser";
 import {
     detectViolations,
@@ -21,6 +22,7 @@ import {
 } from "@/features/detection/regex-engine";
 import { checkDeviations, type Deviation } from "@/data/fair-templates";
 import { generateFixedContractDocx, countChanges, type DocxMetadata } from "@/features/export/docx-generator";
+import { redactPII } from "@/lib/pii-redactor";
 
 // ... (previous type definitions remain the same) 
 type AppState = 'upload' | 'processing' | 'results';
@@ -204,10 +206,13 @@ export default function AnalyzePage() {
             let aiAvailable = false;
 
             try {
+                // Apply PII redaction before sending to API (Privacy by Design)
+                const { redactedText } = redactPII(parseResult.text);
+
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contractText: parseResult.text }),
+                    body: JSON.stringify({ contractText: redactedText }),
                 });
 
                 if (response.ok) {
@@ -272,6 +277,18 @@ export default function AnalyzePage() {
                 timestamp: Date.now(),
             };
             setContextResults(contextResults);
+
+            // Save to history for Reports page
+            try {
+                const history = localStorage.getItem("verity_report_history");
+                const parsedHistory = history ? JSON.parse(history) : [];
+                // Save full result to allow viewing details later
+                // Limit to last 20 to avoid quota issues
+                const newHistory = [contextResults, ...parsedHistory].slice(0, 20);
+                localStorage.setItem("verity_report_history", JSON.stringify(newHistory));
+            } catch (e) {
+                console.error("Failed to save history", e);
+            }
 
             setCurrentLayer('complete');
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -692,6 +709,8 @@ export default function AnalyzePage() {
                 onDownload={handleDownloadFixed}
                 fileName={analysisResult?.documentInfo.fileName || 'contract'}
             />
+
+            <ProfileSetupModal />
         </main>
     );
 }

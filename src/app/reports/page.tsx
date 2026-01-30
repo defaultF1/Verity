@@ -21,6 +21,7 @@ import {
     Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AnalysisResult } from "@/contexts/analysis-context";
 
 // Mock report data
 interface Report {
@@ -168,6 +169,32 @@ export default function ReportsPage() {
         }
     }, [isLoggedIn, openLoginModal]);
 
+    // Load history
+    useEffect(() => {
+        const savedHistory = localStorage.getItem("verity_report_history");
+        if (savedHistory) {
+            try {
+                const parsed: AnalysisResult[] = JSON.parse(savedHistory);
+                const mappedReports: Report[] = parsed.map(item => ({
+                    id: item.timestamp.toString(),
+                    fileName: item.documentInfo.fileName,
+                    scanDate: new Date(item.timestamp).toISOString(),
+                    riskScore: item.riskScore,
+                    violations: item.violations.length,
+                    status: (item.riskScore >= 70 ? "critical" : item.riskScore >= 40 ? "warning" : "safe") as "critical" | "warning" | "safe"
+                }));
+
+                // Remove duplicates if any (though unlikely with mock IDs being small numbers)
+                setReports(prev => {
+                    // meaningful merge if needed, but for now just appending mapped + mock
+                    return [...mappedReports, ...mockReports];
+                });
+            } catch (e) {
+                console.error("Failed to load history", e);
+            }
+        }
+    }, []);
+
     const filteredReports = reports.filter(report =>
         report.fileName.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -190,6 +217,18 @@ export default function ReportsPage() {
 
     const handleDelete = (id: string) => {
         setReports(reports.filter(r => r.id !== id));
+
+        // Remove from local storage history
+        const history = localStorage.getItem("verity_report_history");
+        if (history) {
+            try {
+                const parsed = JSON.parse(history);
+                const newHistory = parsed.filter((r: any) => r.timestamp.toString() !== id);
+                localStorage.setItem("verity_report_history", JSON.stringify(newHistory));
+            } catch (e) {
+                console.error(e);
+            }
+        }
     };
 
     const formatDate = (dateString: string) => {

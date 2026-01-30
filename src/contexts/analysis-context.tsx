@@ -70,6 +70,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
                 const parsed: AnalysisResult = JSON.parse(stored);
                 // Check expiration
                 if (Date.now() - parsed.timestamp < EXPIRATION_MS) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setResultsState(parsed);
                 } else {
                     localStorage.removeItem(ANALYSIS_STORAGE_KEY);
