@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 
 interface User {
     name: string;
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [isLoggedIn, user, isInitialized]);
 
-    const login = async (email: string, _password: string): Promise<boolean> => {
+    const login = useCallback(async (email: string, _password: string): Promise<boolean> => {
         // Simulated auth for hackathon demo
         // In production, this would call an API
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -72,26 +72,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
         return true;
-    };
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setUser(null);
         setIsLoggedIn(false);
-    };
+    }, []);
 
-    const openLoginModal = () => setIsLoginModalOpen(true);
-    const closeLoginModal = () => setIsLoginModalOpen(false);
+    const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
+    const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+
+    const value = useMemo(() => ({
+        isLoggedIn,
+        user,
+        login,
+        logout,
+        openLoginModal,
+        closeLoginModal,
+        isLoginModalOpen
+    }), [isLoggedIn, user, login, logout, openLoginModal, closeLoginModal, isLoginModalOpen]);
 
     return (
-        <AuthContext.Provider value={{
-            isLoggedIn,
-            user,
-            login,
-            logout,
-            openLoginModal,
-            closeLoginModal,
-            isLoginModalOpen
-        }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
