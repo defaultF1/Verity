@@ -58,11 +58,19 @@ export function FeatureGrid() {
                         <h4 className="text-4xl font-black uppercase">Don&apos;t sign blindly.</h4>
                         <p className="text-white/40 text-xl">Upload your document now to see if these clauses are hiding in your fine print.</p>
                     </div>
-                    <Link href="/analyze">
-                        <button className="w-full lg:w-auto px-12 py-8 bg-white text-black font-black text-2xl uppercase tracking-tighter hover:bg-[var(--color-accent)] hover:text-white transition-colors">
-                            Check My Contract
-                        </button>
-                    </Link>
+                    <button
+                        onClick={() => {
+                            const token = localStorage.getItem("verity_auth");
+                            if (token && JSON.parse(token).isLoggedIn) {
+                                window.location.href = "/analyze";
+                            } else {
+                                document.dispatchEvent(new CustomEvent('open-login-modal'));
+                            }
+                        }}
+                        className="w-full lg:w-auto px-12 py-8 bg-white text-black font-black text-2xl uppercase tracking-tighter hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+                    >
+                        Check My Contract
+                    </button>
                 </div>
             </div>
         </section>
