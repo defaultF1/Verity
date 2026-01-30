@@ -1,0 +1,84 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792]
+/Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1500 >>
+stream
+BT
+/F1 16 Tf
+50 700 Td
+(FREELANCE SERVICES AGREEMENT) Tj
+0 -30 Td
+/F1 12 Tf
+(Between: ABC Technologies Pvt. Ltd. ("Client")) Tj
+0 -20 Td
+(And: John Doe ("Consultant")) Tj
+0 -30 Td
+(ARTICLE 1: NON-COMPETE CLAUSE) Tj
+0 -20 Td
+(The Consultant shall not compete with the Client or work for any) Tj
+0 -15 Td
+(competitor of the Client for a period of 24 months following) Tj
+0 -15 Td
+(termination of this Agreement.) Tj
+0 -30 Td
+(ARTICLE 2: INTELLECTUAL PROPERTY) Tj
+0 -20 Td
+(All intellectual property, including derivative works and future) Tj
+0 -15 Td
+(inventions, shall vest absolutely in the Client. The Consultant) Tj
+0 -15 Td
+(hereby waives all moral rights in the work product.) Tj
+0 -30 Td
+(ARTICLE 3: INDEMNIFICATION) Tj
+0 -20 Td
+(The Consultant shall indemnify and hold harmless the Client) Tj
+0 -15 Td
+(against all claims, damages, losses, and liabilities arising from) Tj
+0 -15 Td
+(the services provided, without any limitation whatsoever.) Tj
+0 -30 Td
+(ARTICLE 4: PAYMENT TERMS) Tj
+0 -20 Td
+(Payment shall be made within 90 days of invoice submission,) Tj
+0 -15 Td
+(subject to client satisfaction.) Tj
+0 -30 Td
+(ARTICLE 5: TERMINATION) Tj
+0 -20 Td
+(The Client may terminate this Agreement immediately without) Tj
+0 -15 Td
+(cause and without payment for work in progress.) Tj
+0 -30 Td
+(ARTICLE 6: GOVERNING LAW) Tj
+0 -20 Td
+(This Agreement shall be governed by the laws of California, USA) Tj
+0 -15 Td
+(and any disputes shall be subject to arbitration in Singapore.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000266 00000 n 
+0000001818 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1895
+%%EOF

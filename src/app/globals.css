@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Colors - Matching index.html exactly */
+  --color-primary: #D35400;
+  --color-accent: #D35400;
+  --color-accent-light: #E67E22;
+  --color-accent-dark: #A04000;
+
+  --color-background-black: #000000;
+  --color-background-light: #FAF9F6;
+  --color-background-card: #111111;
+  --color-text-main: #FAF9F6;
+  --color-text-secondary: rgba(250, 249, 246, 0.6);
+  --color-text-muted: rgba(250, 249, 246, 0.4);
+
+  /* Semantic mappings */
+  --color-danger: #C0392B;
+  --color-warning: #F39C12;
+  --color-success: #27AE60;
+  --color-info: #2980B9;
+
+  /* Typography */
+  --font-display: "Inter", sans-serif;
+  --font-serif: "Libre Baskerville", serif;
+  --font-mono: "Fira Code", monospace;
+
+  /* Custom Animations */
+  @keyframes scan-line {
+    0% {
+      top: 0%;
+      opacity: 0;
+    }
+
+    10% {
+      opacity: 1;
+    }
+
+    90% {
+      opacity: 1;
+    }
+
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 10px rgba(211, 84, 0, 0.2);
+    }
+
+    50% {
+      box-shadow: 0 0 20px rgba(211, 84, 0, 0.6);
+    }
+  }
+
+  --animate-scan: scan-line 3s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s infinite;
+}
+
+@layer utilities {
+
+  /* Exact utilities from index.html */
+  .font-cabinet {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.06em;
+    font-weight: 900;
+  }
+
+  .text-outline {
+    -webkit-text-stroke: 1px rgba(250, 249, 246, 0.3);
+    color: transparent;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.9) 100%);
+  }
+
+  .xray-container {
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .fault-line {
+    filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.8));
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[var(--color-background-black)] text-[var(--color-text-main)] font-display antialiased selection:bg-[var(--color-accent)] selection:text-white;
+  }
+}
+
+@layer base {
+
+  /* Custom Scrollbar - Hidden */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
