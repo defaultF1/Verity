@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/auth-context";
 import { useLanguage } from "@/contexts/language-context";
 import { Lock, ChevronDown, LayoutDashboard, FileText, Settings, Zap, BarChart, LifeBuoy, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LanguageToggle } from "@/components/language-toggle";
 
 interface NavItem {
     label: string;
@@ -94,9 +93,6 @@ export function DashboardNav({ activeTab = "Dashboard" }: DashboardNavProps) {
 
                     {/* User Profile / Login */}
                     <div className="flex items-center gap-4">
-                        {/* Language Toggle */}
-                        <LanguageToggle variant="minimal" className="text-stone-500 hover:text-[#c65316]" />
-
                         <div className="relative">
                             {isLoggedIn && user ? (
                                 <div
