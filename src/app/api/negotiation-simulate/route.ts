@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         const body: NegotiationRequest = await request.json();
         const { messages, difficulty, violationType, violationContext } = body;
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
             // Return fallback response if no API key
@@ -49,23 +49,29 @@ Respond as the client would, in first person.`;
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+
+            // Map messages to Gemini format
+            const geminiContents = messages
+                .filter(m => m.role !== "system")
+                .map(m => ({
+                    role: m.role === "user" ? "user" : "model",
+                    parts: [{ text: m.content }]
+                }));
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 300,
-                    system: systemPrompt,
-                    messages: messages
-                        .filter(m => m.role !== "system")
-                        .map(m => ({
-                            role: m.role === "user" ? "user" : "assistant",
-                            content: m.content,
-                        })),
+                    contents: geminiContents,
+                    system_instruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 300,
+                    }
                 }),
                 signal: controller.signal,
             });
@@ -73,12 +79,13 @@ Respond as the client would, in first person.`;
             clearTimeout(timeoutId);
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Gemini API error:', response.status, errorText);
                 throw new Error("API request failed");
             }
 
             const data = await response.json();
-            const textContent = data.content?.find((block: { type: string }) => block.type === "text");
-            const responseText = textContent?.text || "Let me think about that...";
+            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Let me think about that...";
 
             // Determine if we should end
             const shouldEnd = messages.length >= 6 ||

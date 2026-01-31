@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
-    const { isLoggedIn, user, openLoginModal, setUser, updateProfile } = useAuth();
+    const { isLoggedIn, user, profile, openLoginModal, setUser, updateProfile } = useAuth();
     const { t } = useLanguage();
 
     // Form states
@@ -35,13 +35,17 @@ export default function ProfilePage() {
     const [isResetting, setIsResetting] = useState(false);
     const [resetStep, setResetStep] = useState<"initial" | "sent">("initial");
 
-    // Initialize states from user object
+    // Initialize states from user and profile object
     useEffect(() => {
         if (user) {
             setName(user.name);
             setEmail(user.email);
         }
-    }, [user]);
+        if (profile) {
+            if (profile.dateOfBirth) setDob(profile.dateOfBirth);
+            if (profile.gender) setGender(profile.gender);
+        }
+    }, [user, profile]);
 
     // Redirect if not logged in
     useEffect(() => {

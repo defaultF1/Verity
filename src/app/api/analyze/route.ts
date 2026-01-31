@@ -150,9 +150,19 @@ Example ELI5: ${config.example}
 `;
 };
 
+const WOMEN_SHIELD_PROMPT = `
+WOMEN FREELANCER SHIELD ENABLED:
+The user is a female professional. You must specifically scan for and flag clauses that pose disproportionate safety or harassment risks, such as:
+1. Unsafe/Unreasonable Hours: Requirements to be available 24/7 or work late night hours at client locations.
+2. Location Risks: Mandatory travel to remote/unsafe locations without specified safety protocols.
+3. Privacy/Harassment: Invasive surveillance, lack of POSH (Prevention of Sexual Harassment) compliance mention, or broad "moral rights" waivers that could affect image/likeness usage.
+4. Termination: Lack of specific safety-related termination rights.
+
+If found, flag these with type "womenSafety" and high severity.`;
+
 export async function POST(request: NextRequest) {
     try {
-        const { contractText, hindiMode, outputLanguage } = await request.json();
+        const { contractText, hindiMode, outputLanguage, enableWomenShield } = await request.json();
 
         // Backward compatibility for hindiMode
         const targetLang = outputLanguage || (hindiMode ? 'hin' : 'eng');
@@ -164,43 +174,45 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
-            console.error('ANTHROPIC_API_KEY not configured');
+            console.error('API key not configured');
             return NextResponse.json(
                 { error: 'AI analysis unavailable - API key not configured', fallbackToRegex: true },
                 { status: 503 }
             );
         }
 
-        // Call Claude API
+        // Call OpenRouter API (OpenAI Compatible)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
         const languagePrompt = getLanguagePrompt(targetLang);
+        const finalSystemPrompt = enableWomenShield
+            ? SYSTEM_PROMPT + "\n\n" + WOMEN_SHIELD_PROMPT
+            : SYSTEM_PROMPT;
 
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 4096,
-                    system: SYSTEM_PROMPT,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `Analyze this contract and return ONLY valid JSON (no markdown, no explanation, just the JSON object):${languagePrompt}
-
-CONTRACT TEXT:
-${contractText}`,
-                        },
-                    ],
+                    contents: [{
+                        parts: [{
+                            text: `Analyze this contract and return ONLY valid JSON (no markdown, no explanation, just the JSON object):${languagePrompt}\n\nCONTRACT TEXT:\n${contractText}`
+                        }]
+                    }],
+                    system_instruction: {
+                        parts: [{ text: finalSystemPrompt }]
+                    },
+                    generationConfig: {
+                        temperature: 0.2, // Lower temperature for analysis
+                        maxOutputTokens: 8192, // Higher token limit for analysis
+                        responseMimeType: "application/json"
+                    }
                 }),
                 signal: controller.signal,
             });
@@ -209,7 +221,7 @@ ${contractText}`,
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Claude API error:', response.status, errorText);
+                console.error('Gemini API error:', response.status, errorText);
                 return NextResponse.json(
                     { error: 'AI analysis failed', fallbackToRegex: true },
                     { status: 502 }
@@ -217,21 +229,23 @@ ${contractText}`,
             }
 
             const data = await response.json();
+            const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-            // Extract the text content from Claude's response
-            const textContent = data.content?.find((c: { type: string }) => c.type === 'text');
-            if (!textContent?.text) {
+            if (!textContent) {
                 throw new Error('No text content in response');
             }
 
             // Parse the JSON response
             let analysisResult: AnalysisResponse;
             try {
+                // Remove Markdown code fences if present
+                const cleanText = textContent.replace(/```json\n?|\n?```/g, '').trim();
+
                 // Try to parse directly
-                analysisResult = JSON.parse(textContent.text);
+                analysisResult = JSON.parse(cleanText);
             } catch {
                 // If direct parse fails, try to extract JSON from the response
-                const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+                const jsonMatch = textContent.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     analysisResult = JSON.parse(jsonMatch[0]);
                 } else {

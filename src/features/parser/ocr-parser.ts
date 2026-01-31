@@ -7,9 +7,10 @@
 
 import { createWorker, OEM, PSM } from 'tesseract.js';
 
-export type SupportedLanguage = 'eng' | 'hin' | 'ben' | 'ori' | 'tel' | 'tam' | 'kan' | 'mal';
+export type SupportedLanguage = 'eng' | 'hin' | 'ben' | 'ori' | 'tel' | 'tam' | 'kan' | 'mal' | 'auto';
 
 export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+    auto: 'Auto-Detect Language',
     eng: 'English',
     hin: 'Hindi (हिंदी)',
     ben: 'Bengali (বাংলা)',
@@ -45,8 +46,17 @@ export async function extractTextFromImage(
 
     onProgress?.({ status: `Initializing OCR engine for ${LANGUAGE_LABELS[language]}...`, progress: 0.1 });
 
-    // Always include English for mixed content
-    const langString = language === 'eng' ? 'eng' : `${language}+eng`;
+    // Configure language string for Tesseract
+    let langString = 'eng';
+    if (language === 'auto') {
+        // In auto mode, load major languages. 
+        // Note: This increases download size but ensures fallback.
+        // Tesseract uses '+' to combine languages.
+        langString = 'eng+hin+kan+tam+tel+mal+ben+ori';
+    } else {
+        // Always include English for mixed content
+        langString = language === 'eng' ? 'eng' : `${language}+eng`;
+    }
 
     // Create worker with selected language support
     const worker = await createWorker(langString, OEM.LSTM_ONLY, {

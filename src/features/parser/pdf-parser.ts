@@ -2,6 +2,7 @@
 // This module dynamically imports pdfjs-dist to avoid SSR issues
 
 import { extractTextFromMultipleImages, type OCRProgress, type SupportedLanguage } from './ocr-parser';
+import { detectLanguage, validateScriptContent, validateEnglishContent } from './language-detector';
 
 export interface PDFParseResult {
     text: string;
@@ -144,13 +145,51 @@ export async function parsePDF(
         .replace(/\n\s*\n/g, '\n\n')
         .trim();
 
-    // Count words
     let wordCount = cleanedText.split(/\s+/).filter(word => word.length > 0).length;
 
-    // Check if this is a scanned/image-based PDF (little to no text extracted)
-    const isScanned = !hasTextContent || wordCount < 50;
+    // --- NEW: Auto-Detection & Validation Logic ---
+    let detectedLanguage = language;
+    let shouldForceOCR = false;
+
+    // 1. Auto-Detect Language if requested
+    if (language === 'auto') {
+        detectedLanguage = detectLanguage(cleanedText);
+
+        // HEURISTIC: If detected as English, verify it's actual English words and not garbage
+        if (detectedLanguage === 'eng') {
+            const isReadbleEnglish = validateEnglishContent(cleanedText);
+            if (!isReadbleEnglish) {
+                console.log('Text detected as English but lacks common stopwords. Likely broken encoding. Forcing OCR.');
+                // We don't know the language, so we keep 'auto' behaviour (OCR with multi-lang)
+                // But we set detectedLanguage to 'eng' (or maybe null?) so we don't try strict script validation 
+                shouldForceOCR = true;
+                onOCRProgress?.({ status: 'Text encoding appears broken. Switching to deeper OCR scan...', progress: 0.1 });
+            }
+        }
+
+        // If we detected a specific Indic language, we switch to it
+        if (detectedLanguage !== 'eng') {
+            onOCRProgress?.({ status: `Auto-detected language: ${detectedLanguage.toUpperCase()}`, progress: 0.1 });
+        }
+    }
+
+    // 2. Validate extracted text against the target language
+    // If user asked for Kannada (or auto-detected it), but we barely found any Kannada chars,
+    // it likely means PDF text extraction failed (garbage/ASCII only).
+    if (detectedLanguage !== 'eng' && detectedLanguage !== 'auto') {
+        const isValid = validateScriptContent(cleanedText, detectedLanguage);
+        if (!isValid) {
+            console.log(`Text validation failed for ${detectedLanguage}. Forcing OCR.`);
+            shouldForceOCR = true;
+            onOCRProgress?.({ status: `Text extraction incomplete for ${detectedLanguage}. Switching to OCR...`, progress: 0.1 });
+        }
+    }
+
+    // Check if this is a scanned/image-based PDF (little to no text extracted) OR if validation failed
+    const isScanned = !hasTextContent || wordCount < 50 || shouldForceOCR;
     let ocrConfidence: number | undefined;
-    let parseMethod: 'text' | 'ocr' = 'text';
+    let parseMethod: 'text' | 'ocr' | 'pdf' = 'text'; // Default to text, but could be 'pdf' based on original type
+
 
     // If scanned, use OCR to extract text
     if (isScanned && typeof window !== 'undefined') {
@@ -172,16 +211,18 @@ export async function parsePDF(
 
             onOCRProgress?.({ status: 'Running OCR on rendered pages...', progress: 0.4 });
 
-            // Run OCR on all page images
+            // Run OCR with the DETECTED language (or auto if we are still in auto mode and extraction failed completely)
+            const languageToUse = (shouldForceOCR && language !== 'auto') ? language : (language === 'auto' ? 'auto' : language);
+
             const ocrResult = await extractTextFromMultipleImages(imageBlobs, (progress) => {
                 onOCRProgress?.({
                     status: progress.status,
                     progress: 0.4 + (0.5 * progress.progress)
                 });
-            }, language);
+            }, languageToUse);
 
-            // Use OCR text if it has meaningful content
-            if (ocrResult.wordCount > wordCount) {
+            // Use OCR text if it was forced OR if it has more meaningful content
+            if (shouldForceOCR || ocrResult.wordCount > wordCount) {
                 cleanedText = ocrResult.text;
                 wordCount = ocrResult.wordCount;
                 ocrConfidence = ocrResult.confidence;

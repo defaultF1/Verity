@@ -17,10 +17,11 @@ import { useLanguage } from "@/contexts/language-context";
 import { Filter, ArrowUpDown, Calculator, MessageSquare, DollarSign } from "lucide-react";
 
 // Import feature components
-import { ShieldToggle } from "@/components/shield/shield-toggle";
+// import { ShieldToggle } from "@/components/shield/shield-toggle";
 import { ShieldAlerts } from "@/components/shield/shield-alerts";
 import { KillFeeModal } from "@/components/kill-fee/kill-fee-modal";
 import { NegotiationModal } from "@/components/negotiation/negotiation-modal";
+import { EmailModal as NegotiationEmailModal } from "@/components/email-modal";
 import { LanguageToggle } from "@/components/language-toggle";
 
 // Import detection logic
@@ -61,6 +62,54 @@ function ResultsPageContent() {
     const [showNegotiationModal, setShowNegotiationModal] = useState(false);
     const [selectedViolation, setSelectedViolation] = useState<ViolationForNegotiation | null>(null);
     const [hasKillFeeClause, setHasKillFeeClause] = useState(true);
+
+    // Email Generator State
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
+    const [emailData, setEmailData] = useState<{ subject: string; body: string; tone: string } | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+
+    // Email Generation Logic
+    const handleGenerateEmail = async (tone: 'polite' | 'firm') => {
+        if (!results) return;
+
+        setIsGeneratingEmail(true);
+        setEmailError(null);
+        try {
+            const response = await fetch('/api/generate-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    violations: results.violations.map((v: ViolationForNegotiation) => ({
+                        type: v.type,
+                        clauseText: v.match,
+                        severity: v.severity,
+                        section: v.section || "General",
+                        eli5: v.eli5 || "Potential legal risk identified in this clause."
+                    })),
+                    tone: tone,
+                    senderName: profile?.name || "[Your Name]",
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.email) {
+                    setEmailData(data.email);
+                } else {
+                    throw new Error(data.error || 'Failed to generate email');
+                }
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to generate email');
+            }
+        } catch (error) {
+            console.error('Email generation error:', error);
+            setEmailError(error instanceof Error ? error.message : 'Failed to generate email');
+        } finally {
+            setIsGeneratingEmail(false);
+        }
+    };
 
     // Auto-enable shield mode for female users
     useEffect(() => {
@@ -221,13 +270,13 @@ function ResultsPageContent() {
                     <LanguageToggle />
                 </div>
 
-                {/* Shield Mode Section */}
-                <div className="mb-8">
-                    <ShieldToggle
-                        enabled={shieldEnabled}
-                        onToggle={setShieldEnabled}
-                    />
-                </div>
+                {/* Shield Mode Section - Automated based on profile, no toggle needed */}
+                {shieldEnabled && (
+                    <div className="mb-8 flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-200 rounded-sm text-purple-800 text-sm font-bold uppercase tracking-wider">
+                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                        Women Freelancer Shield Active
+                    </div>
+                )}
 
                 {/* Shield Alerts */}
                 {shieldEnabled && shieldAlerts.length > 0 && (
@@ -282,6 +331,13 @@ function ResultsPageContent() {
                                 Quick Actions
                             </h4>
                             <div className="space-y-3">
+                                <button
+                                    onClick={() => setShowEmailModal(true)}
+                                    className="w-full px-4 py-3 text-sm font-bold text-accent bg-accent/5 border border-accent/20 rounded-sm hover:bg-accent/10 transition flex items-center gap-2"
+                                >
+                                    <MessageSquare className="w-4 h-4" />
+                                    Draft Negotiation Email
+                                </button>
                                 <button
                                     onClick={() => setShowKillFeeModal(true)}
                                     className="w-full px-4 py-3 text-sm font-bold text-[#c65316] bg-[#c65316]/5 border border-[#c65316]/20 rounded-sm hover:bg-[#c65316]/10 transition flex items-center gap-2"
@@ -395,6 +451,15 @@ function ResultsPageContent() {
                 isOpen={showNegotiationModal}
                 onClose={() => setShowNegotiationModal(false)}
                 violation={selectedViolation}
+            />
+
+            <NegotiationEmailModal
+                isOpen={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                onGenerate={handleGenerateEmail}
+                loading={isGeneratingEmail}
+                emailData={emailData}
+                error={emailError}
             />
         </div>
     );

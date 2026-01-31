@@ -165,6 +165,97 @@ const VIOLATION_PATTERNS: RegexPattern[] = [
         eli5: 'They can fire you instantly without any notice or payment for work done. Extremely one-sided!',
         fairAlternative: 'Mutual termination rights: "Either party may terminate with 30 days written notice. Consultant shall be paid for all work completed to date."',
     },
+
+    // --- Kannada Patterns ---
+    // Section 27 (Kannada)
+    {
+        type: 'section27',
+        category: 'legal',
+        patterns: [
+            /ಸ್ಪರ್ಧಿಸಬಾರದು/gi, // Should not compete
+            /ವ್ಯಾಪಾರವನ್ನು\s+ನಿಬರ್ಂಧಿಸುವ/gi, // Retraint of trade
+            /ಸ್ಪರ್ಧಾತ್ಮಕ\s+ವ್ಯಾಪಾರ/gi, // Competitive business
+            /ಕೆಲಸ\s+ಮಾಡುವುದನ್ನು\s+ನಿಷೇಧಿಸಲಾಗಿದೆ/gi, // Prohibited from working
+            /ಒಪ್ಪಂದದ\s+ಅವಧಿಯ\s+ನಂತರ/gi, // After contract period
+            /ಸ್ಪರ್ಧಿ\s+ಕಂಪನಿಗೆ\s+ಸೇವೆ\s+ಸಲ್ಲಿಸುವಂತಿಲ್ಲ/gi, // From demo
+            /ಯಾವುದೇ\s+ಪೈಪೋಟಿ\s+ಸಂಸ್ಥೆಯಲ್ಲಿ/gi,
+        ],
+        severity: 95,
+        section: 'Section 27',
+        actName: 'Indian Contract Act, 1872',
+        caseLaw: 'Percept D\'Mark (India) Pvt Ltd v. Zaheer Khan (2006) 4 SCC 227',
+        eli5: 'ಈ ಷರತ್ತು ನೀವು ಕೆಲಸ ಬಿಟ್ಟ ನಂತರ ಬೇರೆ ಕಡೆ ಕೆಲಸ ಮಾಡುವುದನ್ನು ತಡೆಯುತ್ತದೆ. ಭಾರತದಲ್ಲಿ ಸೆಕ್ಷನ್ 27 ರ ಅಡಿಯಲ್ಲಿ ಇದು ಸಂಪೂರ್ಣವಾಗಿ ಕಾನೂನುಬಾಹಿರ.',
+        fairAlternative: 'Non-solicitation only: "You can work anywhere, but cannot poach our specific clients for 6 months."',
+    },
+    // Section 23 (Kannada)
+    {
+        type: 'section23',
+        category: 'legal',
+        patterns: [
+            /ಕಾನೂನುಬಾಹಿರ\s+ಉದ್ದೇಶ/gi,
+            /ಸಾರ್ವಜನಿಕ\s+ನೀತಿಯ\s+ವಿರುದ್ಧ/gi,
+            /ಅಕ್ರಮ\s+ಉದ್ದೇಶ/gi,
+        ],
+        severity: 90,
+        section: 'Section 23',
+        actName: 'Indian Contract Act, 1872',
+        eli5: 'ಈ ಒಪ್ಪಂದದ ಉದ್ದೇಶ ಕಾನೂನುಬಾಹಿರವಾಗಿದೆ.',
+        fairAlternative: 'Remove unlawful clauses.',
+    },
+    // Section 74 - Penalty (Kannada)
+    {
+        type: 'penaltyClause', // Changed from 'section74' to 'penaltyClause' for consistency with Violation interface
+        category: 'legal',
+        patterns: [
+            /ದಂಡವನ್ನು\s+ಪಾವತಿಸಬೇಕು/gi,
+            /ದಂಡ\s+ವಿಧಿಸಲಾಗುವುದು/gi,
+            /ದಂಡ/gi,
+        ],
+        severity: 85,
+        section: 'Section 74',
+        actName: 'Indian Contract Act, 1872',
+        eli5: 'ನಿಜವಾದ ನಷ್ಟಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ದಂಡವನ್ನು ಭಾರತೀಯ ಕಾನೂನು ಅನುಮತಿಸುವುದಿಲ್ಲ.',
+        fairAlternative: 'ನಿಜವಾದ ನಷ್ಟಕ್ಕೆ ಸೀಮಿತವಾದ ಹಾನಿ ಮರುಪಾವತಿ.',
+    },
+    // IP / Moral Rights (Kannada)
+    {
+        type: 'moralRightsWaiver',
+        category: 'legal',
+        patterns: [
+            /ನೈತಿಕ\s+ಹಕ್ಕುಗಳನ್ನು\s+ತ್ಯಜಿಸುತ್ತಾರೆ/gi, // From demo
+            /ಹಕ್ಕುಗಳನ್ನು\s+ಬಿಟ್ಟುಕೊಡುತ್ತಾರೆ/gi,
+        ],
+        severity: 82,
+        section: 'Section 57',
+        actName: 'Copyright Act, 1957',
+        eli5: 'ನೈತಿಕ ಹಕ್ಕುಗಳನ್ನು (Moral Rights) ಭಾರತದಲ್ಲಿ ತ್ಯಜಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.',
+        fairAlternative: 'ಕಲಾವಿದರು ತಮ್ಮ ನೈತಿಕ ಹಕ್ಕುಗಳನ್ನು ಕಾಪಾಡಿಕೊಳ್ಳುತ್ತಾರೆ.',
+    },
+    // Jurisdiction (Kannada)
+    {
+        type: 'foreignLaw',
+        category: 'unfair',
+        patterns: [
+            /ಕ್ಯಾಲಿಫೋರ್ನಿಯಾ\s+ರಾಜ್ಯದ\s+ಕಾನೂನು/gi, // From demo
+            /ಸಿಂಗಾಪುರದಲ್ಲಿ\s+ಮಧ್ಯಸ್ಥಿಕೆ/gi, // From demo
+            /ಈ\s+ಒಪ್ಪಂದವು\s+ಭಾರತದ\s+ಹೊರಗಿನ/gi,
+        ],
+        severity: 65,
+        eli5: 'ವಿದೇಶಿ ಕಾನೂನು ಅಥವಾ ನ್ಯಾಯಾಲಯಗಳ ಬಳಕೆ ನಿಮಗೆ ಅಪಾಯಕಾರಿ ಮತ್ತು ದುಬಾರಿಯಾಗಿದೆ.',
+        fairAlternative: 'ಭಾರತೀಯ ಕಾನೂನು ಮತ್ತು ಸ್ಥಳೀಯ ನ್ಯಾಯಾಲಯಗಳ ಬಳಕೆ.',
+    },
+    // Termination (Kannada)
+    {
+        type: 'terminationAsymmetry',
+        category: 'unfair',
+        patterns: [
+            /ನೋಟೀಸ್\s+ನೀಡಿ\s+ರದ್ದುಗೊಳಿಸಬಹುದು/gi,
+            /೨೪\s+ಗಂಟೆಗಳ\s+ನೋಟೀಸ್/gi, // From demo
+        ],
+        severity: 70,
+        eli5: 'ಒಪ್ಪಂದವನ್ನು ರದ್ದುಗೊಳಿಸುವ ನಿಯಮಗಳು ಅಸಮಾನವಾಗಿವೆ.',
+        fairAlternative: 'ಎರಡೂ ಪಕ್ಷಗಳಿಗೆ ಸಮಾನ ನೋಟೀಸ್ ಅವಧಿ.',
+    },
 ];
 
 /**

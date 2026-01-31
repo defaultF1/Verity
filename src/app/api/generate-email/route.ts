@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
             console.error('ANTHROPIC_API_KEY not configured');
@@ -127,23 +127,22 @@ Write the email now. Return only JSON.`;
         const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
 
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 2048,
-                    system: tonePrompt + COMMON_PROMPT,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: userMessage,
-                        },
-                    ],
+                    contents: [{
+                        parts: [{
+                            text: `${tonePrompt}\n\n${COMMON_PROMPT}\n\n${userMessage}`
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 2048,
+                        responseMimeType: "application/json"
+                    }
                 }),
                 signal: controller.signal,
             });
@@ -152,7 +151,7 @@ Write the email now. Return only JSON.`;
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Claude API error:', response.status, errorText);
+                console.error('Gemini API error:', response.status, errorText);
                 return NextResponse.json(
                     { error: 'Email generation failed' },
                     { status: 502 }
@@ -160,20 +159,18 @@ Write the email now. Return only JSON.`;
             }
 
             const data = await response.json();
+            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-            // Extract the text content from Claude's response
-            const textContent = data.content?.find((c: { type: string }) => c.type === 'text');
-            if (!textContent?.text) {
+            if (!responseText) {
                 throw new Error('No text content in response');
             }
 
             // Parse the JSON response
             let emailResult: EmailResponse;
             try {
-                emailResult = JSON.parse(textContent.text);
+                emailResult = JSON.parse(responseText);
             } catch {
-                // Try to extract JSON from the response
-                const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     emailResult = JSON.parse(jsonMatch[0]);
                 } else {
