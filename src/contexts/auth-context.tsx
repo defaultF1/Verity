@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             usage: {
                 scansUsed: 8,
                 scansTotal: 10,
-                plan: "Freelancer Pro"
+                plan: "Freelancer"
             }
         });
         setIsLoggedIn(true);

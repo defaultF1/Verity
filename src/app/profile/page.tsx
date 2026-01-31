@@ -293,29 +293,7 @@ export default function ProfilePage() {
                             )}
                         </div>
 
-                        {/* Account Stats */}
-                        <div className="bg-[#5D3D50] rounded-sm shadow-lg p-8 text-white relative overflow-hidden group">
-                            <div className="relative z-10">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">{t("Membership")}</p>
-                                <h3 className="text-2xl font-bold mb-6">Freelancer Pro</h3>
 
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{t("Account Age")}</span>
-                                        <span className="text-sm font-bold">142 Days</span>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{t("Trust Score")}</span>
-                                        <span className="text-sm font-bold text-emerald-400">99.2%</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Decorative gavel icon background */}
-                            <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-white/10 text-9xl group-hover:scale-110 transition-transform duration-700">
-                                gavel
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>

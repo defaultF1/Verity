@@ -136,11 +136,7 @@ export function DashboardNav({ activeTab = "Dashboard" }: DashboardNavProps) {
                                         <div className="px-5 py-4 border-b border-stone-100 bg-stone-50/50">
                                             <div className="flex items-center justify-between mb-1">
                                                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t("Signed in as")}</p>
-                                                {user?.usage?.plan && (
-                                                    <span className="bg-[#c65316]/10 text-[#c65316] text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-[#c65316]/20">
-                                                        {user.usage.plan}
-                                                    </span>
-                                                )}
+
                                             </div>
                                             <p className="text-sm font-bold text-stone-800 truncate">{user?.email}</p>
                                         </div>

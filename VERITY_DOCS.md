@@ -70,6 +70,13 @@ Freelancers in India often face significant legal hurdles:
     - The AI analyzes the strength of the contract and the detected violations.
     - It predicts a **Confidence Score**, **Estimated Time** (months), and **Legal Costs** (INR) based on recent Indian judicial trends.
 
+### 9. Account & Dashboard
+*   **What it does**: Provides a centralized hub for managing personal data and analysis history.
+*   **How it works**:
+    - **Reports Dashboard**: High-level view of all previous scans with risk status and action menus.
+    - **Profile Management**: Section to securely update personal details like Name, DoB, and Gender.
+    - **Usage Tracking**: Real-time visual progress bars showing consumption of analysis credits.
+
 ---
 
 ## 💻 Tech Stack
