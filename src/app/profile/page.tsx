@@ -220,6 +220,7 @@ export default function ProfilePage() {
                                             <input
                                                 type="date"
                                                 value={dob}
+                                                max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]}
                                                 onChange={(e) => {
                                                     setDob(e.target.value);
                                                     if (ageError) setAgeError("");
