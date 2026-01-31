@@ -63,6 +63,9 @@ function ResultsPageContent() {
     const [selectedViolation, setSelectedViolation] = useState<ViolationForNegotiation | null>(null);
     const [hasKillFeeClause, setHasKillFeeClause] = useState(true);
 
+    // Acknowledgements State
+    const [acknowledgedIds, setAcknowledgedIds] = useState<string[]>([]);
+
     // Email Generator State
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
@@ -139,7 +142,20 @@ function ResultsPageContent() {
         } else {
             setShieldAlerts([]);
         }
+
     }, [shieldEnabled, results]);
+
+    // Load acknowledgements
+    useEffect(() => {
+        const stored = localStorage.getItem("verity_acknowledged_violations");
+        if (stored) {
+            try {
+                setAcknowledgedIds(JSON.parse(stored));
+            } catch (e) {
+                console.error("Failed to load acknowledgements", e);
+            }
+        }
+    }, []);
 
     // Check for kill fee clause
     useEffect(() => {
@@ -191,6 +207,18 @@ function ResultsPageContent() {
         setShowNegotiationModal(true);
     };
 
+    // Handle acknowledgement
+    const handleAcknowledge = (violationId: string) => {
+        setAcknowledgedIds(prev => {
+            const next = prev.includes(violationId)
+                ? prev.filter(id => id !== violationId) // Toggle off if already exists (undo)
+                : [...prev, violationId];
+
+            localStorage.setItem("verity_acknowledged_violations", JSON.stringify(next));
+            return next;
+        });
+    };
+
     // Show loading if no results yet
     if (!results) {
         return (
@@ -234,7 +262,11 @@ function ResultsPageContent() {
             section: v.section ? t(v.section) : undefined,
             progress: getStableProgress(v.id),
             icon: (v.category === "legal" ? "security" : "handshake") as "security" | "handshake",
-            violation: v // Keep original violation for negotiation
+            violation: v, // Keep original violation for negotiation
+            fairAlternative: v.fairAlternative,
+            caseLaw: v.caseLaw,
+            isAcknowledged: acknowledgedIds.includes(v.id),
+            onAcknowledge: handleAcknowledge
         };
     });
 

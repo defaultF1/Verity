@@ -307,7 +307,7 @@ export function NegotiationModal({ isOpen, onClose, violation }: NegotiationModa
                                         className={cn(
                                             "max-w-[80%] p-3 rounded-sm",
                                             message.role === "user" && "bg-indigo-600 text-white",
-                                            message.role === "client" && "bg-white border border-stone-200",
+                                            message.role === "client" && "bg-white border border-stone-200 text-stone-800",
                                             message.role === "system" && "bg-stone-200 text-stone-600 text-xs"
                                         )}
                                     >
@@ -339,7 +339,7 @@ export function NegotiationModal({ isOpen, onClose, violation }: NegotiationModa
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                                     placeholder="Type your negotiation response..."
-                                    className="flex-1 px-4 py-3 bg-stone-50 border border-stone-200 rounded-sm focus:outline-none focus:border-indigo-500"
+                                    className="flex-1 px-4 py-3 bg-stone-50 border border-stone-200 rounded-sm focus:outline-none focus:border-indigo-500 text-stone-800 placeholder:text-stone-400"
                                     disabled={isLoading}
                                 />
                                 <button
