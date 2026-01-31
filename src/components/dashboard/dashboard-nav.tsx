@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useLanguage } from "@/contexts/language-context";
 import { Lock, ChevronDown, LayoutDashboard, FileText, Settings, Zap, BarChart, LifeBuoy, MessageSquare } from "lucide-react";
@@ -20,6 +21,7 @@ interface DashboardNavProps {
 
 export function DashboardNav({ activeTab = "Dashboard" }: DashboardNavProps) {
     const { isLoggedIn, user, openLoginModal, logout, openProfileModal } = useAuth();
+    const router = useRouter();
     const { t } = useLanguage();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -204,6 +206,7 @@ export function DashboardNav({ activeTab = "Dashboard" }: DashboardNavProps) {
                                                 onClick={() => {
                                                     logout();
                                                     setIsProfileOpen(false);
+                                                    router.push("/");
                                                 }}
                                                 className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition"
                                             >
