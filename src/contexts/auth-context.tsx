@@ -12,6 +12,11 @@ interface User {
     name: string;
     email: string;
     role: string;
+    usage?: {
+        scansUsed: number;
+        scansTotal: number;
+        plan: string;
+    };
 }
 
 interface AuthContextType {
@@ -28,6 +33,8 @@ interface AuthContextType {
     closeProfileModal: () => void;
     isProfileModalOpen: boolean;
     saveProfile: (profile: UserProfile) => void;
+    setUser: (user: User | null) => void;
+    updateProfile: (profile: UserProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -101,7 +108,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
             name: formattedName,
             email,
-            role: "Freelancer"
+            role: "Freelancer",
+            usage: {
+                scansUsed: 8,
+                scansTotal: 10,
+                plan: "Freelancer Pro"
+            }
         });
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
@@ -119,6 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(newProfile);
         localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(newProfile));
         setIsProfileModalOpen(false);
+    }, []);
+
+    const updateProfile = useCallback((newProfile: UserProfile) => {
+        setProfile(newProfile);
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(newProfile));
     }, []);
 
     const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
@@ -141,8 +158,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         openProfileModal,
         closeProfileModal,
         isProfileModalOpen,
-        saveProfile
-    }), [isLoggedIn, user, profile, isProfileComplete, login, logout, openLoginModal, closeLoginModal, isLoginModalOpen, openProfileModal, closeProfileModal, isProfileModalOpen, saveProfile]);
+        saveProfile,
+        setUser,
+        updateProfile
+    }), [isLoggedIn, user, profile, isProfileComplete, login, logout, openLoginModal, closeLoginModal, isLoginModalOpen, openProfileModal, closeProfileModal, isProfileModalOpen, saveProfile, updateProfile]);
 
     return (
         <AuthContext.Provider value={value}>

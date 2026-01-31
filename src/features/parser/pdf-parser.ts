@@ -1,7 +1,7 @@
 // PDF parsing with OCR fallback for scanned/image-based PDFs
 // This module dynamically imports pdfjs-dist to avoid SSR issues
 
-import { extractTextFromMultipleImages, type OCRProgress } from './ocr-parser';
+import { extractTextFromMultipleImages, type OCRProgress, type SupportedLanguage } from './ocr-parser';
 
 export interface PDFParseResult {
     text: string;
@@ -64,7 +64,8 @@ async function renderPageToImage(
  */
 export async function parsePDF(
     file: File,
-    onOCRProgress?: (progress: OCRProgress) => void
+    onOCRProgress?: (progress: OCRProgress) => void,
+    language: SupportedLanguage = 'eng'
 ): Promise<PDFParseResult> {
     // Dynamically import PDF.js only on client side
     const pdfjsLib = await import('pdfjs-dist');
@@ -177,7 +178,7 @@ export async function parsePDF(
                     status: progress.status,
                     progress: 0.4 + (0.5 * progress.progress)
                 });
-            });
+            }, language);
 
             // Use OCR text if it has meaningful content
             if (ocrResult.wordCount > wordCount) {

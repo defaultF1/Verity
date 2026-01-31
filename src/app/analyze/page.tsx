@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Download, Mail, Sparkles, AlertCircle, Wrench, Zap, FileText } from "lucide-react";
+import { Wrench, Mail, AlertCircle, CheckCircle, FileText, Info, ArrowRight, Upload, Sparkles, Download, Zap, ArrowLeft, Globe } from "lucide-react";
+import { RateComparison } from "@/components/rate-comparison";
 import { useAnalysis, type AnalysisResult as ContextAnalysisResult } from "@/contexts/analysis-context";
+import { useLanguage } from "@/contexts/language-context";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { UploadZone } from "@/components/upload-zone";
 import { ProcessingAnimation, type ProcessingLayer } from "@/components/processing-animation";
@@ -15,6 +18,7 @@ import { EmailModal } from "@/components/email-modal";
 import { ContractFixModal } from "@/components/contract-fix-modal";
 import { ProfileSetupModal } from "@/components/profile-setup-modal";
 import { parseDocument } from "@/features/parser";
+import { SupportedLanguage, LANGUAGE_LABELS } from "@/features/parser/ocr-parser";
 import {
     detectViolations,
     calculateRiskScore,
@@ -70,7 +74,7 @@ function convertAIViolation(aiViolation: AIViolation, index: number): Violation 
         'section23': 'unlawfulAgreement',
         'section74': 'penaltyClause',
         'copyrightOverreach': 'ipOverreach',
-        'moralRightsWaiver': 'moralRightsWaiver',
+        'moralRightsWaiver': 'moralRightsWaiver', // Fixed mapping
         'unlimitedLiability': 'unlimitedLiability',
         'jurisdictionTrap': 'foreignLaw',
         'terminationAsymmetry': 'terminationAsymmetry',
@@ -152,6 +156,8 @@ function deviationToCardProps(deviation: Deviation): DeviationCardProps {
 export default function AnalyzePage() {
     const router = useRouter();
     const { setResults: setContextResults } = useAnalysis();
+    const { isLoggedIn, openLoginModal } = useAuth();
+    const { t, isHindi } = useLanguage();
     const [appState, setAppState] = useState<AppState>('upload');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [currentLayer, setCurrentLayer] = useState<ProcessingLayer | 'complete'>('regex');
@@ -161,6 +167,14 @@ export default function AnalyzePage() {
     const [isFixingContract, setIsFixingContract] = useState(false);
     const [fixedContractText, setFixedContractText] = useState<string | null>(null);
     const [processingError, setProcessingError] = useState<string | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('eng');
+
+    // Sync with global language toggle initially
+    useEffect(() => {
+        if (isHindi && selectedLanguage === 'eng') {
+            setSelectedLanguage('hin');
+        }
+    }, [isHindi]); // Only run when isHindi changes
 
     // Email Generator State
     const [showEmailModal, setShowEmailModal] = useState(false);
@@ -181,7 +195,7 @@ export default function AnalyzePage() {
             // Layer 1: Parse document (unified parser handles PDF/DOCX)
             setCurrentLayer('regex');
 
-            const parseResult = await parseDocument(file);
+            const parseResult = await parseDocument(file, undefined, selectedLanguage);
             setExtractedText(parseResult.text);
 
             // Run regex detection
@@ -212,7 +226,11 @@ export default function AnalyzePage() {
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contractText: redactedText }),
+                    body: JSON.stringify({
+                        contractText: redactedText,
+                        hindiMode: isHindi,
+                        outputLanguage: selectedLanguage
+                    }),
                 });
 
                 if (response.ok) {
@@ -304,7 +322,7 @@ export default function AnalyzePage() {
             setProcessingError(errorMessage);
             setAppState('upload');
         }
-    }, []);
+    }, [selectedLanguage, isHindi, setContextResults, router]);
 
     const handleFileSelect = useCallback((file: File) => {
         setSelectedFile(file);
@@ -420,6 +438,13 @@ export default function AnalyzePage() {
                     </Link>
 
                     <nav className="flex items-center gap-6">
+                        {isLoggedIn ? (
+                            <Link href="/reports">
+                                <Button variant="outline" size="sm" className="font-bold uppercase tracking-wider">Dashboard</Button>
+                            </Link>
+                        ) : (
+                            <Button variant="outline" size="sm" onClick={openLoginModal} className="font-bold uppercase tracking-wider text-accent border-accent/20 hover:bg-accent/10">Login</Button>
+                        )}
                         {appState === 'results' && (
                             <Button variant="ghost" size="sm" onClick={handleNewAnalysis}>
                                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -443,6 +468,23 @@ export default function AnalyzePage() {
                                     Upload your contract and get instant insights on legal violations, unfair terms,
                                     and Supreme Court citations.
                                 </p>
+                            </div>
+
+                            {/* Language Selector */}
+                            <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                                <Globe className="w-4 h-4 text-white/50" />
+                                <span className="text-sm text-white/60">Document Language:</span>
+                                <select
+                                    className="bg-transparent border-none text-sm text-white focus:ring-0 cursor-pointer"
+                                    value={selectedLanguage}
+                                    onChange={(e) => setSelectedLanguage(e.target.value as SupportedLanguage)}
+                                >
+                                    {(Object.entries(LANGUAGE_LABELS) as [SupportedLanguage, string][]).map(([code, label]) => (
+                                        <option key={code} value={code} className="bg-black text-white">
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <UploadZone
@@ -485,6 +527,7 @@ export default function AnalyzePage() {
                             )}
                         </div>
                     )}
+// ... rest of file
 
                     {/* Processing State */}
                     {appState === 'processing' && (
@@ -625,6 +668,11 @@ export default function AnalyzePage() {
                                             ))}
                                         </div>
                                     )}
+
+                                    {/* Market Rate Comparison */}
+                                    <div className="mb-8">
+                                        <RateComparison className="w-full" />
+                                    </div>
 
                                     {/* No Issues Found */}
                                     {analysisResult.violations.length === 0 && analysisResult.deviations.length === 0 && (

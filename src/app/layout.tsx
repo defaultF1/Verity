@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { AnalysisProvider } from "@/contexts/analysis-context";
-
-export const metadata: Metadata = {
-  title: "Verity | AI Legal Assistant",
-  description: "Bank-grade contract analysis powered by legal AI.",
-};
+import { LanguageProvider } from "@/contexts/language-context";
+import { LoginModal } from "@/components/login-modal";
 
 export default function RootLayout({
   children,
@@ -23,12 +20,16 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-[#000000] text-[#FAF9F6] antialiased" style={{ fontFamily: "'Inter', sans-serif" }} suppressHydrationWarning>
-        <AuthProvider>
-          <AnalysisProvider>
-            {children}
-          </AnalysisProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <LoginModal />
+            <AnalysisProvider>
+              {children}
+            </AnalysisProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
 }
+

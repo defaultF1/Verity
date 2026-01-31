@@ -2,10 +2,23 @@
  * OCR Parser using Tesseract.js
  * 
  * Handles text extraction from scanned PDFs and images.
- * Supports Hindi (hin) and English (eng) languages.
+ * Supports multiple Indic languages.
  */
 
 import { createWorker, OEM, PSM } from 'tesseract.js';
+
+export type SupportedLanguage = 'eng' | 'hin' | 'ben' | 'ori' | 'tel' | 'tam' | 'kan' | 'mal';
+
+export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+    eng: 'English',
+    hin: 'Hindi (हिंदी)',
+    ben: 'Bengali (বাংলা)',
+    ori: 'Odia (ଓଡ଼ିଆ)',
+    tel: 'Telugu (తెలుగు)',
+    tam: 'Tamil (தமிழ்)',
+    kan: 'Kannada (ಕನ್ನಡ)',
+    mal: 'Malayalam (മലയാളം)',
+};
 
 export interface OCRResult {
     text: string;
@@ -25,14 +38,18 @@ export interface OCRProgress {
  */
 export async function extractTextFromImage(
     imageFile: File,
-    onProgress?: (progress: OCRProgress) => void
+    onProgress?: (progress: OCRProgress) => void,
+    language: SupportedLanguage = 'eng'
 ): Promise<OCRResult> {
     const startTime = Date.now();
 
-    onProgress?.({ status: 'Initializing OCR engine...', progress: 0.1 });
+    onProgress?.({ status: `Initializing OCR engine for ${LANGUAGE_LABELS[language]}...`, progress: 0.1 });
 
-    // Create worker with English + Hindi language support
-    const worker = await createWorker('eng+hin', OEM.LSTM_ONLY, {
+    // Always include English for mixed content
+    const langString = language === 'eng' ? 'eng' : `${language}+eng`;
+
+    // Create worker with selected language support
+    const worker = await createWorker(langString, OEM.LSTM_ONLY, {
         logger: (m: { status: string; progress: number }) => {
             onProgress?.({
                 status: m.status,
@@ -66,11 +83,6 @@ export async function extractTextFromImage(
     const confidence = result.data.confidence;
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
 
-    // Detect primary language
-    const hindiPattern = /[\u0900-\u097F]/; // Devanagari Unicode range
-    const hasHindi = hindiPattern.test(text);
-    const language = hasHindi ? 'hin+eng' : 'eng';
-
     onProgress?.({ status: 'Complete', progress: 1 });
 
     return {
@@ -84,16 +96,16 @@ export async function extractTextFromImage(
 
 /**
  * Extract text from a scanned PDF (rendered as images)
- * This requires the PDF to be pre-rendered to images
  */
 export async function extractTextFromPDFImage(
     imageBlob: Blob,
     pageNumber: number,
-    onProgress?: (progress: OCRProgress) => void
+    onProgress?: (progress: OCRProgress) => void,
+    language: SupportedLanguage = 'eng'
 ): Promise<OCRResult> {
     // Convert blob to file
     const file = new File([imageBlob], `page-${pageNumber}.png`, { type: 'image/png' });
-    return extractTextFromImage(file, onProgress);
+    return extractTextFromImage(file, onProgress, language);
 }
 
 /**
@@ -101,7 +113,8 @@ export async function extractTextFromPDFImage(
  */
 export async function extractTextFromMultipleImages(
     imageBlobs: Blob[],
-    onProgress?: (progress: OCRProgress) => void
+    onProgress?: (progress: OCRProgress) => void,
+    language: SupportedLanguage = 'eng'
 ): Promise<OCRResult> {
     const startTime = Date.now();
     const results: OCRResult[] = [];
@@ -112,7 +125,7 @@ export async function extractTextFromMultipleImages(
             progress: i / imageBlobs.length,
         });
 
-        const result = await extractTextFromPDFImage(imageBlobs[i], i + 1);
+        const result = await extractTextFromPDFImage(imageBlobs[i], i + 1, undefined, language);
         results.push(result);
     }
 
@@ -162,8 +175,6 @@ export function isSupportedImageType(file: File): boolean {
  * Check if text extraction quality is acceptable
  */
 export function isConfidenceAcceptable(confidence: number): boolean {
-    // Tesseract confidence: 0-100
-    // Below 60 is usually too noisy to be reliable
     return confidence >= 60;
 }
 
@@ -171,6 +182,6 @@ export function isConfidenceAcceptable(confidence: number): boolean {
  * Pre-process hint for the UI
  */
 export function getOCRProcessingHint(): string {
-    return 'OCR processing may take 10-30 seconds per page. For best results, ensure the document is well-lit and properly aligned.';
+    return 'OCR processing may take 10-30 seconds per page. Select the correct language for best results.';
 }
 

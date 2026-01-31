@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { StatusBar } from "@/components/dashboard/status-bar";
-import { LoginModal } from "@/components/login-modal";
 import { useAuth } from "@/contexts/auth-context";
 import {
     FileText,
@@ -242,7 +241,6 @@ export default function ReportsPage() {
     return (
         <div className="min-h-screen bg-[#f8f6f6]">
             <DashboardNav activeTab="Reports" />
-            <LoginModal />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24">
                 {/* Header */}

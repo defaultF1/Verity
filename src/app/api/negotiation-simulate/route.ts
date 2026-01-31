@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
 
 interface NegotiationRequest {
     messages: Array<{ role: string; content: string }>;
@@ -23,6 +20,16 @@ export async function POST(request: NextRequest) {
         const body: NegotiationRequest = await request.json();
         const { messages, difficulty, violationType, violationContext } = body;
 
+        const apiKey = process.env.ANTHROPIC_API_KEY;
+
+        if (!apiKey) {
+            // Return fallback response if no API key
+            return NextResponse.json({
+                response: "I need to think about this. Can you elaborate on your position?",
+                shouldEnd: false,
+            });
+        }
+
         const systemPrompt = `${DIFFICULTY_PROMPTS[difficulty]}
 
 You are negotiating about this contract clause type: ${violationType}
@@ -38,29 +45,54 @@ RULES:
 
 Respond as the client would, in first person.`;
 
-        const response = await anthropic.messages.create({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 300,
-            system: systemPrompt,
-            messages: messages
-                .filter(m => m.role !== "system")
-                .map(m => ({
-                    role: m.role === "user" ? "user" : "assistant",
-                    content: m.content,
-                })) as Anthropic.MessageParam[],
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const textContent = response.content.find(block => block.type === "text");
-        const responseText = textContent?.type === "text" ? textContent.text : "Let me think about that...";
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 300,
+                    system: systemPrompt,
+                    messages: messages
+                        .filter(m => m.role !== "system")
+                        .map(m => ({
+                            role: m.role === "user" ? "user" : "assistant",
+                            content: m.content,
+                        })),
+                }),
+                signal: controller.signal,
+            });
 
-        // Determine if we should end
-        const shouldEnd = messages.length >= 6 ||
-            /agree|deal|accepted|fine|okay we can|let's proceed/i.test(responseText);
+            clearTimeout(timeoutId);
 
-        return NextResponse.json({
-            response: responseText,
-            shouldEnd,
-        });
+            if (!response.ok) {
+                throw new Error("API request failed");
+            }
+
+            const data = await response.json();
+            const textContent = data.content?.find((block: { type: string }) => block.type === "text");
+            const responseText = textContent?.text || "Let me think about that...";
+
+            // Determine if we should end
+            const shouldEnd = messages.length >= 6 ||
+                /agree|deal|accepted|fine|okay we can|let's proceed/i.test(responseText);
+
+            return NextResponse.json({
+                response: responseText,
+                shouldEnd,
+            });
+
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            throw fetchError;
+        }
 
     } catch (error) {
         console.error("Negotiation simulation error:", error);
@@ -72,3 +104,5 @@ Respond as the client would, in first person.`;
         });
     }
 }
+
+export const runtime = 'edge';

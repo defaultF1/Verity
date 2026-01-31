@@ -4,7 +4,8 @@ import {
     extractTextFromImage,
     isSupportedImageType,
     type OCRResult,
-    type OCRProgress
+    type OCRProgress,
+    type SupportedLanguage
 } from './ocr-parser';
 
 export interface UnifiedParseResult {
@@ -23,14 +24,15 @@ export interface UnifiedParseResult {
  */
 export async function parseDocument(
     file: File,
-    onOCRProgress?: (progress: OCRProgress) => void
+    onOCRProgress?: (progress: OCRProgress) => void,
+    language: SupportedLanguage = 'eng'
 ): Promise<UnifiedParseResult> {
     const fileName = file.name.toLowerCase();
     const fileType = file.type;
 
     // Handle PDF files
     if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-        const result = await parsePDF(file, onOCRProgress);
+        const result = await parsePDF(file, onOCRProgress, language);
 
         // parseMethod will be 'text' for regular PDFs or 'ocr' for image-based PDFs
         return {
@@ -63,7 +65,7 @@ export async function parseDocument(
 
         onOCRProgress?.({ status: 'Initializing OCR engine...', progress: 0 });
 
-        const ocrResult: OCRResult = await extractTextFromImage(file, onOCRProgress);
+        const ocrResult: OCRResult = await extractTextFromImage(file, onOCRProgress, language);
 
         // Check confidence threshold
         if (ocrResult.confidence < 40) {

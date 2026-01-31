@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth-context";
+import { useLanguage } from "@/contexts/language-context";
 import { cn } from "@/lib/utils";
 import { Shield, Info } from "lucide-react";
 
@@ -11,6 +12,7 @@ interface ShieldToggleProps {
 
 export function ShieldToggle({ enabled, onToggle }: ShieldToggleProps) {
     const { profile } = useAuth();
+    const { t } = useLanguage();
 
     // Show toggle for everyone, but highlight for women
     const isWoman = profile?.gender === "female";
@@ -41,10 +43,10 @@ export function ShieldToggle({ enabled, onToggle }: ShieldToggleProps) {
                             "font-bold text-lg",
                             enabled ? "text-purple-800" : "text-stone-800"
                         )}>
-                            Women Freelancer Shield
+                            {t("Women Freelancer Shield")}
                             {isWoman && (
                                 <span className="ml-2 text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full">
-                                    Recommended
+                                    {t("Recommended")}
                                 </span>
                             )}
                         </h3>
@@ -68,17 +70,17 @@ export function ShieldToggle({ enabled, onToggle }: ShieldToggleProps) {
                         "text-sm mt-1",
                         enabled ? "text-purple-600" : "text-stone-500"
                     )}>
-                        Detects clauses that disproportionately affect women:
+                        {t("Detects clauses that disproportionately affect women:")}
                     </p>
 
                     <ul className={cn(
                         "mt-2 text-xs space-y-1",
                         enabled ? "text-purple-600" : "text-stone-400"
                     )}>
-                        <li>• Safety-compromising access clauses</li>
-                        <li>• Jurisdiction traps requiring travel</li>
-                        <li>• Unreasonable availability requirements</li>
-                        <li>• Image/likeness rights concerns</li>
+                        <li>• {t("Safety-compromising access clauses")}</li>
+                        <li>• {t("Jurisdiction traps requiring travel")}</li>
+                        <li>• {t("Unreasonable availability requirements")}</li>
+                        <li>• {t("Image/likeness rights concerns")}</li>
                     </ul>
 
                     {/* Source */}
@@ -87,7 +89,7 @@ export function ShieldToggle({ enabled, onToggle }: ShieldToggleProps) {
                         enabled ? "text-purple-400" : "text-stone-400"
                     )}>
                         <Info className="w-3 h-3" />
-                        Developed with input from Women Freelancers India (8,000+ members)
+                        {t("Developed with input from Women Freelancers India (8,000+ members)")}
                     </div>
                 </div>
             </div>

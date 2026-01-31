@@ -2,6 +2,7 @@
 
 import { ShieldX, TimerOff, Handshake, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface ViolationFeedItemProps {
     id: string;
@@ -51,6 +52,13 @@ export function ViolationFeedItem({
     };
 
     const styles = riskStyles[riskLevel];
+    const { t } = useLanguage();
+
+    const riskLabel = {
+        high: t("High Risk"),
+        medium: t("Medium Risk"),
+        low: t("Low Risk")
+    }[riskLevel];
 
     return (
         <div id={id} className="scroll-mt-32 bg-[#FDFDFD] rounded-sm shadow-lg border border-white overflow-hidden hover:border-[#c65316]/20 transition-all duration-300">
@@ -74,7 +82,7 @@ export function ViolationFeedItem({
                         "px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-sm whitespace-nowrap",
                         styles.badge
                     )}>
-                        {riskLevel === "high" ? "High Risk" : riskLevel === "medium" ? "Medium Risk" : "Low Risk"}
+                        {riskLabel}
                     </span>
                 </div>
 
@@ -84,7 +92,7 @@ export function ViolationFeedItem({
                         <BookOpen className="w-5 h-5 text-[#c65316] flex-shrink-0" />
                         <div>
                             <span className="text-[10px] font-bold text-[#c65316] uppercase tracking-widest">
-                                Executive Summary
+                                {t("Executive Summary")}
                             </span>
                             <p className="text-sm text-stone-700 mt-2 leading-relaxed font-medium">
                                 {executiveSummary}
@@ -97,15 +105,15 @@ export function ViolationFeedItem({
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-[#c65316]/5">
                     <div className="flex gap-4 w-full sm:w-auto">
                         <button className="flex-1 sm:flex-none px-8 py-3 text-xs font-bold uppercase tracking-widest text-white bg-[#c65316] rounded-sm hover:bg-[#2A3D36] transition shadow-lg shadow-[#c65316]/10">
-                            View Details
+                            {t("View Details")}
                         </button>
                         <button className="flex-1 sm:flex-none px-8 py-3 text-xs font-bold uppercase tracking-widest text-[#c65316] bg-white border border-[#c65316]/20 rounded-sm hover:bg-[#c65316]/5 transition">
-                            Acknowledge
+                            {t("Acknowledge")}
                         </button>
                     </div>
                     <div className="flex items-center gap-4 w-full sm:w-auto">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                            Resolution Progress
+                            {t("Resolution Progress")}
                         </span>
                         <div className="h-1 w-32 bg-[#c65316]/10 rounded-full overflow-hidden">
                             <div

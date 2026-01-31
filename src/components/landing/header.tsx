@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 
 export function Header() {
+    const { isLoggedIn, openLoginModal } = useAuth();
+
     return (
         <header className="fixed top-0 z-[100] w-full bg-black/80 backdrop-blur-xl border-b border-white/10">
             <div className="max-w-[1400px] mx-auto px-6 py-5 flex items-center justify-between">
@@ -26,9 +28,21 @@ export function Header() {
                     <a className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors" href="#pricing">
                         Pricing
                     </a>
-                    <a className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors" href="#login">
-                        Login
-                    </a>
+                    {isLoggedIn ? (
+                        <Link
+                            href="/reports"
+                            className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors"
+                        >
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <button
+                            onClick={openLoginModal}
+                            className="text-xs font-bold tracking-[0.2em] uppercase text-[#FAF9F6] hover:text-[var(--color-accent)] transition-colors"
+                        >
+                            Login
+                        </button>
+                    )}
                     <Link href="/analyze">
                         <button className="bg-[var(--color-accent)] text-white px-8 py-3 text-xs font-black tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all duration-300">
                             Upload Contract

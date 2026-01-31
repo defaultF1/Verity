@@ -2,6 +2,7 @@
 
 import { Building2, Clock, AlertCircle, AlertTriangle, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface AnalysisOverviewProps {
     entityName: string;
@@ -20,6 +21,8 @@ export function AnalysisOverview({
     dataPoints,
     className
 }: AnalysisOverviewProps) {
+    const { t } = useLanguage();
+
     return (
         <div className={cn(
             "bg-[#FDFDFD] rounded-sm shadow-lg border border-white overflow-hidden",
@@ -28,10 +31,10 @@ export function AnalysisOverview({
             {/* Header */}
             <div className="bg-[#c65316]/5 px-8 py-5 border-b border-[#c65316]/10 flex justify-between items-center">
                 <h3 className="font-bold text-lg text-[#c65316]">
-                    Analysis Overview
+                    {t("Analysis Overview")}
                 </h3>
                 <span className="inline-flex items-center px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider bg-[#c65316]/10 text-[#c65316]">
-                    Optimal Status
+                    {t("Optimal Status")}
                 </span>
             </div>
 
@@ -41,7 +44,7 @@ export function AnalysisOverview({
                 <div className="flex items-center justify-between group gap-4">
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Building2 className="w-4 h-4 text-stone-300 group-hover:text-[#c65316] transition" />
-                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">Entity</span>
+                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">{t("Entity")}</span>
                     </div>
                     <span className="font-bold text-[#c65316] text-sm truncate text-right flex-1 min-w-0" title={entityName}>{entityName}</span>
                 </div>
@@ -50,7 +53,7 @@ export function AnalysisOverview({
                 <div className="flex items-center justify-between group gap-4">
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Clock className="w-4 h-4 text-stone-300 group-hover:text-[#c65316] transition" />
-                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">Last Scan</span>
+                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">{t("Last Scan")}</span>
                     </div>
                     <span className="font-medium text-[#c65316] text-sm whitespace-nowrap">{lastScanDate}</span>
                 </div>
@@ -62,7 +65,7 @@ export function AnalysisOverview({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertCircle className="w-5 h-5 text-[#5D3D50]" />
-                        <span className="text-stone-500 text-sm">Critical Issues</span>
+                        <span className="text-stone-500 text-sm">{t("Critical Issues")}</span>
                     </div>
                     <span className="font-bold text-xl text-[#5D3D50]">{criticalIssues}</span>
                 </div>
@@ -71,7 +74,7 @@ export function AnalysisOverview({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-stone-400" />
-                        <span className="text-stone-500 text-sm">Medium Issues</span>
+                        <span className="text-stone-500 text-sm">{t("Medium Issues")}</span>
                     </div>
                     <span className="font-bold text-xl text-stone-600">{mediumIssues}</span>
                 </div>
@@ -80,7 +83,7 @@ export function AnalysisOverview({
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Database className="w-4 h-4 text-[#c65316]/40" />
-                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">Data Points</span>
+                        <span className="text-stone-500 text-xs uppercase tracking-wider font-bold">{t("Data Points")}</span>
                     </div>
                     <span className="font-bold text-[#c65316] text-sm whitespace-nowrap">{dataPoints}</span>
                 </div>

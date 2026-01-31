@@ -1,22 +1,25 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface RiskGaugeProps {
     score: number;
     className?: string;
 }
 
-function getRiskLevel(score: number): { label: string; color: string; bgColor: string } {
-    if (score >= 70) {
-        return { label: "High Risk", color: "text-white", bgColor: "bg-[#5D3D50]" };
-    } else if (score >= 40) {
-        return { label: "Medium Risk", color: "text-stone-700", bgColor: "bg-stone-200" };
-    }
-    return { label: "Low Risk", color: "text-white", bgColor: "bg-emerald-600" };
-}
-
 export function RiskGauge({ score, className }: RiskGaugeProps) {
+    const { t } = useLanguage();
+
+    const getRiskLevel = (score: number): { label: string; color: string; bgColor: string } => {
+        if (score >= 70) {
+            return { label: t("High Risk"), color: "text-white", bgColor: "bg-[#5D3D50]" };
+        } else if (score >= 40) {
+            return { label: t("Medium Risk"), color: "text-stone-700", bgColor: "bg-stone-200" };
+        }
+        return { label: t("Low Risk"), color: "text-white", bgColor: "bg-emerald-600" };
+    };
+
     const riskLevel = getRiskLevel(score);
 
     // Calculate stroke-dashoffset for the gauge
@@ -33,7 +36,7 @@ export function RiskGauge({ score, className }: RiskGaugeProps) {
             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-[#c65316] to-transparent opacity-30" />
 
             <h2 className="text-stone-400 text-[11px] font-bold tracking-[0.2em] uppercase mb-8">
-                Overall Risk Assessment
+                {t("Overall Risk Assessment")}
             </h2>
 
             {/* SVG Gauge */}
@@ -81,7 +84,7 @@ export function RiskGauge({ score, className }: RiskGaugeProps) {
             </div>
 
             <p className="text-sm text-stone-500 italic leading-relaxed">
-                Score based on detected violations and risk factors.
+                {t("Score based on detected violations and risk factors.")}
             </p>
         </div>
     );

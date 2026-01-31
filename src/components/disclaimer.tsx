@@ -3,6 +3,7 @@
 import { Shield, AlertTriangle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/language-context";
 
 interface DisclaimerProps {
     variant: 'footer' | 'results' | 'modal' | 'checkbox';
@@ -12,6 +13,7 @@ interface DisclaimerProps {
 
 export function Disclaimer({ variant, onAccept, className }: DisclaimerProps) {
     const [accepted, setAccepted] = useState(false);
+    const { t } = useLanguage();
 
     const handleCheckboxChange = () => {
         const newValue = !accepted;
@@ -21,6 +23,10 @@ export function Disclaimer({ variant, onAccept, className }: DisclaimerProps) {
 
     // Footer variant - subtle, always visible
     if (variant === 'footer') {
+        const footerText = t("Disclaimer_Footer_Body");
+        // Fallback if key missing (shouldn't happen with updated context)
+        const defaultFooterText = "Verity provides legal information and analysis based on Indian law, not legal advice...";
+
         return (
             <div className={cn("border-t border-white/10 mt-8 pt-8 pb-4", className)}>
                 <div className="max-w-4xl mx-auto">
@@ -28,12 +34,7 @@ export function Disclaimer({ variant, onAccept, className }: DisclaimerProps) {
                         <Shield className="w-5 h-5 text-white/30 flex-shrink-0 mt-0.5" />
                         <div>
                             <p className="text-xs text-white/40 leading-relaxed">
-                                <strong className="text-white/50">Legal Disclaimer:</strong> Verity
-                                provides legal information and analysis based on Indian law, not legal
-                                advice. This tool is designed to help identify potential issues in
-                                contracts but should not be considered a substitute for professional
-                                legal counsel. Always consult a qualified advocate before signing
-                                contracts involving significant financial or legal obligations.
+                                <strong className="text-white/50">{t("Legal Disclaimer")}:</strong> {footerText.startsWith("Disclaimer_") ? defaultFooterText : footerText}
                             </p>
                         </div>
                     </div>
@@ -44,6 +45,9 @@ export function Disclaimer({ variant, onAccept, className }: DisclaimerProps) {
 
     // Results variant - prominent warning above analysis
     if (variant === 'results') {
+        const resultsText = t("Disclaimer_Results_Body");
+        const defaultResultsText = "This analysis is for informational purposes only and does not constitute legal advice...";
+
         return (
             <div className={cn(
                 "p-5 rounded-xl mb-6",
@@ -57,13 +61,10 @@ export function Disclaimer({ variant, onAccept, className }: DisclaimerProps) {
                     </div>
                     <div className="space-y-2">
                         <h4 className="font-black text-sm uppercase tracking-wider text-[#c65316]">
-                            Important Notice
+                            {t("Important Notice")}
                         </h4>
                         <p className="text-sm text-stone-600 leading-relaxed">
-                            This analysis is for <strong className="text-stone-900">informational purposes only</strong> and
-                            does not constitute legal advice. While Verity uses AI trained on Indian contract law and
-                            Supreme Court precedents, it may not catch every issue. For contracts involving significant
-                            amounts (₹10L+), always have a qualified advocate review the document.
+                            {resultsText.startsWith("Disclaimer_") ? defaultResultsText : resultsText}
                         </p>
                     </div>
                 </div>

@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 export function LoginModal() {
+    const router = useRouter();
     const { isLoginModalOpen, closeLoginModal, login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState("");
 
     if (!isLoginModalOpen) return null;
@@ -25,12 +28,15 @@ export function LoginModal() {
 
         setIsLoading(true);
         try {
+            // Both login and signup use the same mock function for now as requested
             const success = await login(email, password);
             if (!success) {
                 setError("Invalid credentials");
+            } else {
+                router.push("/reports");
             }
         } catch {
-            setError("Login failed. Please try again.");
+            setError(isSignUp ? "Registration failed. Please try again." : "Login failed. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -69,10 +75,10 @@ export function LoginModal() {
 
                     {/* Title */}
                     <h2 className="text-2xl font-bold text-center text-[#c65316] mb-2">
-                        Sign In to Verity
+                        {isSignUp ? "Create an Account" : "Sign In to Verity"}
                     </h2>
                     <p className="text-sm text-center text-stone-500 mb-8">
-                        Access full reports and settings
+                        {isSignUp ? "Join Verity for full contract protection" : "Access full reports and settings"}
                     </p>
 
                     {/* Form */}
@@ -89,7 +95,7 @@ export function LoginModal() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="admin@company.com"
-                                    className="w-full pl-12 pr-4 py-3 bg-stone-100 border border-stone-200 rounded-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c65316] focus:border-transparent"
+                                    className="w-full pl-12 pr-4 py-3 bg-stone-100 border border-stone-200 rounded-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c65316] focus:border-transparent transition-all"
                                 />
                             </div>
                         </div>
@@ -106,7 +112,7 @@ export function LoginModal() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full pl-12 pr-12 py-3 bg-stone-100 border border-stone-200 rounded-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c65316] focus:border-transparent"
+                                    className="w-full pl-12 pr-12 py-3 bg-stone-100 border border-stone-200 rounded-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c65316] focus:border-transparent transition-all"
                                 />
                                 <button
                                     type="button"
@@ -120,7 +126,7 @@ export function LoginModal() {
 
                         {/* Error */}
                         {error && (
-                            <div className="p-3 bg-red-100 text-red-600 text-sm rounded-sm">
+                            <div className="p-3 bg-red-100 text-red-600 text-sm rounded-sm animate-in fade-in zoom-in duration-200">
                                 {error}
                             </div>
                         )}
@@ -129,18 +135,31 @@ export function LoginModal() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-[#c65316] text-white font-bold uppercase tracking-widest rounded-sm hover:bg-[#2A3D36] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-4 bg-[#c65316] text-white font-bold uppercase tracking-widest rounded-sm hover:bg-[#2A3D36] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#c65316]/20"
                         >
                             {isLoading ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                    Signing In...
+                                    {isSignUp ? "Creating Account..." : "Signing In..."}
                                 </>
                             ) : (
-                                "Sign In"
+                                isSignUp ? "Sign Up" : "Sign In"
                             )}
                         </button>
                     </form>
+
+                    {/* Switch between Login and SignUp */}
+                    <div className="mt-6 text-center">
+                        <button
+                            onClick={() => {
+                                setIsSignUp(!isSignUp);
+                                setError("");
+                            }}
+                            className="text-sm font-medium text-[#c65316] hover:underline transition"
+                        >
+                            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+                        </button>
+                    </div>
 
                     {/* Divider */}
                     <div className="flex items-center gap-4 my-6">

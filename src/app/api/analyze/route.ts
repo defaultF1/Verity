@@ -94,9 +94,68 @@ PRIVACY & ANONYMIZATION PROTOCOL (STRICT MANDATE):
 
 Your output generally should warn the user about the legal risks, not store their personal data.`;
 
+// Multi-language ELI5 prompt generator
+const getLanguagePrompt = (langCode: string) => {
+    const configs: Record<string, { name: string; script: string; example: string }> = {
+        'hin': {
+            name: 'Hindi',
+            script: 'Devanagari',
+            example: '"यह धारा कहती है कि आप अपने शहर में काम नहीं कर सकते। यह वैसा ही है जैसे कोई चायवाला कहे कि आप पूरे मोहल्ले में किसी और को चाय नहीं बेच सकते!"'
+        },
+        'ben': {
+            name: 'Bengali',
+            script: 'Bengali',
+            example: '"এই ধারাটি বলছে যে আপনি আপনার শহরে কাজ করতে পারবেন না। এটা এমন যেন কোনো চা-ওয়ালা বলছে যে আপনি পুরো পাড়ায় আর কাউকে চা বিক্রি করতে পারবেন না!"'
+        },
+        'ori': {
+            name: 'Odia',
+            script: 'Odia',
+            example: '"ଏହି ଧାରା କହୁଛି ଯେ ଆପଣ ନିଜ ସହରରେ କାମ କରିପାରିବେ ନାହିଁ। ଏହା ଯେମିତି କୌଣସି ଚା’ ଦୋକାନୀ କହୁଛି ଯେ ଆପଣ ପୂରା ସାହିରେ ଆଉ କାହାକୁ ଚା’ ବିକିପାରିବେ ନାହିଁ!"'
+        },
+        'tel': {
+            name: 'Telugu',
+            script: 'Telugu',
+            example: '"ఈ నిబంధన ప్రకారం మీరు మీ నగరంలో పని చేయడానికి వీలు లేదు. ఇది ఒక చాయ్ వాలా మీరు ఆ కాలనీలో ఇంకెవరికీ చాయ్ అమ్మకూడదు అని చెప్పినట్లు ఉంది!"'
+        },
+        'tam': {
+            name: 'Tamil',
+            script: 'Tamil',
+            example: '"இந்த விதி நீங்கள் உங்கள் நகரத்தில் வேலை செய்ய முடியாது என்று கூறுகிறது. இது ஒரு டீக்கடைக்காரர் நீங்கள் அந்த தெருவில் வேறு யாருக்கும் டீ விற்கக்கூடாது என்று சொல்வது போன்றது!"'
+        },
+        'kan': {
+            name: 'Kannada',
+            script: 'Kannada',
+            example: '"ಈ ನಿಯಮವು ನಿಮ್ಮ ನಗರದಲ್ಲಿ ನೀವು ಕೆಲಸ ಮಾಡುವಂತಿಲ್ಲ ಎಂದು ಹೇಳುತ್ತದೆ. ಇದು ಒಬ್ಬ ಚಾಯ್‌ವಾಲಾ ನೀವು ಇಡೀ ಬಡಾವಣೆಯಲ್ಲಿ ಬೇರೆ ಯಾರಿಗೂ ಚಾಯ್ ಮಾರಾಟ ಮಾಡುವಂತಿಲ್ಲ ಎಂದು ಹೇಳಿದಂತಿದೆ!"'
+        },
+        'mal': {
+            name: 'Malayalam',
+            script: 'Malayalam',
+            example: '"നിങ്ങൾക്ക് നിങ്ങളുടെ നഗരത്തിൽ ജോലി ചെയ്യാൻ കഴിയില്ലെന്ന് ഈ വകുപ്പ് പറയുന്നു. ഒരു ചായക്കടക്കാരൻ നിങ്ങളോട് ഈ പ്രദേശത്ത് മറ്റാർക്കും ചായ വിൽക്കാൻ പാടില്ല എന്ന് പറയുന്നത് പോലെയാണിത്!"'
+        }
+    };
+
+    const config = configs[langCode];
+    if (!config) return '';
+
+    return `
+IMPORTANT: Generate the "eli5" (Explain Like I'm 5) explanation and "summary" in ${config.name} (${config.script} script).
+The ${config.name} explanation should be:
+- Simple and conversational
+- Use everyday ${config.name}, avoid legal jargon
+- Maximum 2-3 sentences
+- Use relatable examples like chai shops, rickshaw fares, or neighborhood scenarios
+
+For legal sections, use ${config.name} format if standard (e.g. "Section 27" -> "धारा 27" for Hindi).
+Example ELI5: ${config.example}
+`;
+};
+
 export async function POST(request: NextRequest) {
     try {
-        const { contractText } = await request.json();
+        const { contractText, hindiMode, outputLanguage } = await request.json();
+
+        // Backward compatibility for hindiMode
+        const targetLang = outputLanguage || (hindiMode ? 'hin' : 'eng');
 
         if (!contractText || typeof contractText !== 'string') {
             return NextResponse.json(
@@ -119,6 +178,8 @@ export async function POST(request: NextRequest) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
+        const languagePrompt = getLanguagePrompt(targetLang);
+
         try {
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -134,7 +195,7 @@ export async function POST(request: NextRequest) {
                     messages: [
                         {
                             role: 'user',
-                            content: `Analyze this contract and return ONLY valid JSON (no markdown, no explanation, just the JSON object):
+                            content: `Analyze this contract and return ONLY valid JSON (no markdown, no explanation, just the JSON object):${languagePrompt}
 
 CONTRACT TEXT:
 ${contractText}`,

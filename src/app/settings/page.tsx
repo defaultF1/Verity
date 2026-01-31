@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { StatusBar } from "@/components/dashboard/status-bar";
-import { LoginModal } from "@/components/login-modal";
 import { useAuth } from "@/contexts/auth-context";
 import {
     Key,
@@ -76,7 +75,6 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-[#f8f6f6]">
             <DashboardNav activeTab="Settings" />
-            <LoginModal />
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24">
                 {/* Header */}

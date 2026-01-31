@@ -15,6 +15,8 @@ All core features (Phases 1-7) have been implemented:
 | 8 | Reports & Settings | ✅ Complete |
 | 9 | Privacy & PII Redaction | ✅ Complete |
 | 10 | Litigation Simulation | ✅ Complete |
+| 11 | Indic Language Support | ✅ Complete |
+| 12 | Market Rate Comparison | ✅ Complete |
 
 ---
 
@@ -200,4 +202,39 @@ npm run build
    - Timeline shows "18-24 months".
    - Cost range shows "₹3-8 Lakhs".
    - Precedent cites "Percept D'Mark v. Zaheer Khan".
+
+---
+
+## 👤 Phase 13: Profile Transition & Logout
+
+### 13.1 Dashboard Navigation Updates
+**File:** `components/dashboard/dashboard-nav.tsx`
+
+**Objective:** Implement a dropdown for authenticated users and ensure guest interactions lead to authentication.
+
+**Changes:**
+- Add `useState` for dropdown visibility.
+- Implement a "Logout" button inside the dropdown.
+- Ensure the "Login" block (Guest state) triggers the `LoginModal`.
+- Update styles to match user-provided screenshots (GUEST vs FREELANCER).
+
+### 13.2 Authentication Enhancements
+**File:** `components/login-modal.tsx`
+
+**Objective:** Add registration support as requested.
+
+**Changes:**
+- Add a toggle state (`isSignUp`) to switch between Login and Register views.
+- Update UI to handle email/password entry for the "register part".
+
+## ✅ Verification Plan (Updated)
+
+### Manual Verification
+
+**Phase 13 (Profile & Auth):**
+1. **Guest State:** Verify clicking the user block opens the `LoginModal`.
+2. **Login/Register:** Verify the modal supports switching between "Sign In" and "Sign Up".
+3. **Authenticated State:** Verify the profile block shows the user's name and "FREELANCER" role.
+4. **Dropdown:** Verify clicking/hovering the profile block shows a "Logout" option.
+5. **Logout:** Verify clicking "Logout" clears the session and returns the UI to "GUEST" state.
 
