@@ -29,6 +29,7 @@ export default function ProfilePage() {
     const [dob, setDob] = useState("");
     const [gender, setGender] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [ageError, setAgeError] = useState("");
     const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
 
     // Password reset states
@@ -58,6 +59,25 @@ export default function ProfilePage() {
         e.preventDefault();
         setIsSaving(true);
         setSaveStatus("idle");
+        setAgeError("");
+
+        // Age Validation (18+)
+        if (dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            if (age < 18) {
+                setAgeError(t("You must be 18 years or older."));
+                setIsSaving(false);
+                setSaveStatus("error");
+                return;
+            }
+        }
 
         // Simulate API call
         setTimeout(() => {
@@ -196,14 +216,28 @@ export default function ProfilePage() {
                                             {t("Date of Birth")}
                                         </label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                                            <Calendar className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4", ageError ? "text-red-400" : "text-stone-400")} />
                                             <input
                                                 type="date"
                                                 value={dob}
-                                                onChange={(e) => setDob(e.target.value)}
-                                                className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-sm focus:border-[#c65316]/30 focus:ring-4 focus:ring-[#c65316]/5 transition text-stone-700"
+                                                onChange={(e) => {
+                                                    setDob(e.target.value);
+                                                    if (ageError) setAgeError("");
+                                                }}
+                                                className={cn(
+                                                    "w-full pl-11 pr-4 py-3 bg-stone-50 border rounded-sm focus:ring-4 transition text-stone-700",
+                                                    ageError
+                                                        ? "border-red-300 focus:border-red-400 focus:ring-red-50"
+                                                        : "border-stone-200 focus:border-[#c65316]/30 focus:ring-[#c65316]/5"
+                                                )}
                                             />
                                         </div>
+                                        {ageError && (
+                                            <p className="text-[10px] font-bold text-red-500 mt-1.5 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {ageError}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Gender Field */}
