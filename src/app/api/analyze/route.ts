@@ -11,8 +11,16 @@ interface Violation {
     fairAlternative: string;
 }
 
+interface MissingClause {
+    type: string;
+    name: string;
+    description: string;
+    legalBasis?: string;
+}
+
 interface AnalysisResponse {
     violations: Violation[];
+    missingClauses?: MissingClause[];
     overallScore: number;
     recommendation: 'sign' | 'negotiate' | 'reject';
     summary: string;
@@ -48,6 +56,14 @@ CASE LAW TO CITE WHEN RELEVANT:
 - ONGC v. Saw Pipes (2003) 5 SCC 705 - Penalty clause reduction
 - Amar Nath Sehgal v. Union of India (2005) 30 PTC 253 - Moral rights inalienable
 
+MISSING RIGHTS DETECTION (PROACTIVE LAWYER):
+Scan for the ABSENCE of these standard protections for freelancers. If missing, add to "missingClauses":
+1. "Right to Cure": Time (e.g., 7-15 days) to fix mistakes before termination.
+2. "Kill Fee": Payment (e.g., 50%) if client cancels early without cause.
+3. "Late Payment Interest": MSME Act mandates interest (3x bank rate) on delays > 45 days.
+4. "IP Portfolio Rights": Right to show work in portfolio (unless strictly NDA).
+5. "Mutual Indemnity": Client should also indemnify freelancer, not just one-way.
+
 OUTPUT FORMAT (Strict JSON):
 {
   "violations": [
@@ -59,6 +75,14 @@ OUTPUT FORMAT (Strict JSON):
       "caseLaw": "Case Name (Year) Citation" or null,
       "eli5": "Explanation a 15-year-old would understand. Use ₹ amounts and Indian context. Be specific about what could go wrong.",
       "fairAlternative": "What this clause SHOULD say to be fair and legal"
+    }
+  ],
+  "missingClauses": [
+    {
+      "type": "rightToCure" | "killFee" | "latePaymentInterest" | "portfolioRights" | "mutualIndemnity",
+      "name": "Display Name (e.g., Missing: Late Payment Interest)",
+      "description": "Why you need this. Mention MSME Act or specific benefits.",
+      "legalBasis": "MSMED Act 2006 / Industry Standard"
     }
   ],
   "overallScore": 0-100,
