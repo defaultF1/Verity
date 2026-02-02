@@ -21,6 +21,12 @@ interface AIAnalysisResponse {
         eli5: string;
         fairAlternative: string;
     }>;
+    missingClauses?: Array<{
+        type: string;
+        name: string;
+        description: string;
+        legalBasis?: string;
+    }>;
     overallScore: number;
     recommendation: 'sign' | 'negotiate' | 'reject';
     summary: string;

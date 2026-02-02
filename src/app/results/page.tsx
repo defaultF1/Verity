@@ -10,6 +10,7 @@ import { AnalysisOverview } from "@/components/dashboard/analysis-overview";
 import { ViolationFeedItem } from "@/components/dashboard/violation-feed-item";
 import { StatusBar } from "@/components/dashboard/status-bar";
 import { BookmarkRail } from "@/components/dashboard/bookmark-rail";
+import { MissingRightsCard } from "@/components/dashboard/missing-rights-card";
 import { Disclaimer } from "@/components/disclaimer";
 import { useAnalysis } from "@/contexts/analysis-context";
 import { useAuth } from "@/contexts/auth-context";
@@ -356,6 +357,11 @@ function ResultsPageContent() {
                             mediumIssues={results.unfairTerms}
                             dataPoints={`${(results.documentInfo.wordCount / 1000).toFixed(1)}K Words`}
                         />
+
+                        {/* Missing Rights (AI Detected) */}
+                        {results.aiAnalysis?.missingClauses && results.aiAnalysis.missingClauses.length > 0 && (
+                            <MissingRightsCard missingClauses={results.aiAnalysis.missingClauses} />
+                        )}
 
                         {/* Quick Actions */}
                         <div className="bg-white rounded-sm shadow-lg border border-white p-5">
